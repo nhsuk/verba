@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>List of Revisions</h1>
+
+{% for revision in revisions %}
+  <div>
+    <a href="#">{{ revision.name }}</a></i>
+  </div>
+{% empty %}
+  <div>No revisions exist.</div>
+{% endfor %}
+{% endblock content %}
