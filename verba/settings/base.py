@@ -10,7 +10,7 @@ sys.path.insert(0, root('apps'))
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'CHANGE THIS!!!'
+SECRET_KEY = 'u1fgde|OZSORNfXRkR)te7bQ$!yOMJh+>OdM80Lo1JTn]29q5F'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -21,26 +21,25 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
+    # 'django.contrib.sessions',
+    # 'django.contrib.messages',
     'django.contrib.staticfiles'
 ]
 
-PROJECT_APPS = []
+PROJECT_APPS = [
+    'revision',
+]
 
 INSTALLED_APPS += PROJECT_APPS
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    # 'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -87,13 +86,13 @@ TEMPLATES = [
         'OPTIONS': {
             'debug': DEBUG,
             'context_processors': [
-                'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.media',
+                # 'django.contrib.auth.context_processors.auth',
+                # 'django.template.context_processors.debug',
+                # 'django.template.context_processors.i18n',
+                # 'django.template.context_processors.media',
                 'django.template.context_processors.static',
-                'django.template.context_processors.tz',
-                'django.contrib.messages.context_processors.messages',
+                # 'django.template.context_processors.tz',
+                # 'django.contrib.messages.context_processors.messages',
             ],
         },
     }
@@ -115,6 +114,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
+VERBA_GITHUB_REPO = None  # GitHub repo with content files to edit in format '<org>/<repo>'
 
 
 # .local.py overrides all the common settings.
