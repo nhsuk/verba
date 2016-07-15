@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div><a href="{% url 'revision:list' %}">Back</a></div>
+<h1>Revision <strong>{{ revision.short_title }}</strong></h1>
+
+<div id="wrap">
+  <div id="left_col">
+    {% for rev_file in revision.get_files %}
+    <div>
+      <a href="{{ rev_file.get_absolute_url }}">{{ rev_file.path }}</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="right_col">
+    {% if revision_file %}
+    <form action="" method="post">{% csrf_token %}
+      {{ form }}
+
+      <input type="submit" name="Save" value="Save">
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
