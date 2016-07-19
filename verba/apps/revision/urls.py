@@ -20,4 +20,9 @@ urlpatterns = [
         views.RevisionFileDetail.as_view(),
         name='file-detail'
     ),
+    url(
+        r'^send-for-approval/(?P<revision_name>[\w-]+)/$',
+        views.SendForApproval.as_view(),
+        name='send-for-approval'
+    ),
 ]

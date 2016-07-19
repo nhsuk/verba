@@ -28,3 +28,26 @@ class ContentForm(forms.Form):
     def save(self):
         new_content = self.cleaned_data['content']
         self.revision_file.change_content(new_content)
+
+
+class SendForApprovalForm(forms.Form):
+    title = forms.CharField(max_length=50)
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 10, 'cols': 50}))
+
+    def __init__(self, *args, **kwargs):
+        self.revision = kwargs.pop('revision')
+
+        initial = kwargs.get('initial', {})
+        initial.update({
+            'title': self.revision.short_title,
+            'description': self.revision.description,
+        })
+        kwargs['initial'] = initial
+
+        super(SendForApprovalForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        title = self.cleaned_data['title']
+        description = self.cleaned_data['description']
+
+        self.revision.send_for_approval(title, description)

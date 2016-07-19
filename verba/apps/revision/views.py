@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.http import Http404
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView, FormView
 
 from .models import RevisionManager
 from .exceptions import RevisionNotFoundException
-from .forms import ContentForm, NewRevisionForm
+from .forms import ContentForm, NewRevisionForm, SendForApprovalForm
 
 
 class RevisionMixin(object):
@@ -95,8 +96,35 @@ class NewRevision(RevisionMixin, FormView):
 
     def form_valid(self, form):
         self.revision = form.save()
-        messages.success(self.request, 'Reviews created.')
+        messages.success(self.request, 'Revision created.')
         return super(NewRevision, self).form_valid(form)
 
     def get_success_url(self):
         return self.revision.get_absolute_url()
+
+
+class SendForApproval(RevisionDetailMixin, FormView):
+    form_class = SendForApprovalForm
+    template_name = 'revision/send_for_approval.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(SendForApproval, self).get_form_kwargs()
+        kwargs['revision'] = self.get_revision()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, 'Revision sent for approval.')
+        return super(SendForApproval, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(SendForApproval, self).get_context_data(**kwargs)
+
+        context.update({
+            'revision': self.get_revision()
+        })
+
+        return context
+
+    def get_success_url(self):
+        return reverse('revision:list')

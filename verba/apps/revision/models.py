@@ -15,6 +15,7 @@ BRANCH_NAMESPACE = 'content-'
 BASE_BRANCH = 'develop'
 
 LABEL_IN_PROGRESS = 'do not merge'
+LABEL_IN_REVIEW = 'for review'
 
 
 def abs_path(path):
@@ -122,6 +123,10 @@ class Revision(object):
     def short_title(self):
         return self.pull.title
 
+    @property
+    def description(self):
+        return self.pull.body
+
     def is_content_file(self, file_name):
         # TODO review
         return file_name.split('.')[-1].lower() == 'md'
@@ -148,11 +153,26 @@ class Revision(object):
         raise RevisionFileNotFoundException("File '{}' not found".format(path))
 
     def mark_as_in_progress(self):
-        # get existing labels and add the 'in progress' one
+        # get existing labels, remove the 'in review' one and add the 'in progress' one
         labels = [l.name for l in self._issue.get_labels()]
+        if LABEL_IN_REVIEW in labels:
+            labels.remove(LABEL_IN_REVIEW)
         labels.append(LABEL_IN_PROGRESS)
 
         self._issue.set_labels(*labels)
+
+    def mark_as_in_review(self):
+        # get existing labels, remove the 'in progress' one and add the 'in review' one
+        labels = [l.name for l in self._issue.get_labels()]
+        if LABEL_IN_PROGRESS in labels:
+            labels.remove(LABEL_IN_PROGRESS)
+        labels.append(LABEL_IN_REVIEW)
+
+        self._issue.set_labels(*labels)
+
+    def send_for_approval(self, title, description):
+        self.mark_as_in_review()
+        self.pull.edit(title=title, body=description)
 
     def get_absolute_url(self):
         return reverse('revision:detail', args=[self.name])
