@@ -1,51 +1,53 @@
 from django.conf import settings
 from django.http import Http404
+from django.contrib import messages
 from django.views.generic import TemplateView, FormView
 
 from .models import RevisionManager
 from .exceptions import RevisionNotFoundException
-from .forms import ContentForm
-
-
-class RevisionList(TemplateView):
-    http_method_names = ['get']
-    template_name = 'revision/list.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(RevisionList, self).get_context_data(**kwargs)
-
-        revision_manager = RevisionManager(token=settings.VERBA_GITHUB_TOKEN)
-        context['revisions'] = revision_manager.get_all()
-        return context
+from .forms import ContentForm, NewRevisionForm
 
 
 class RevisionMixin(object):
+    @property
+    def revision_manager(self):
+        if not hasattr(self, '_revision_manager'):
+            self._revision_manager = RevisionManager(token=settings.VERBA_GITHUB_TOKEN)
+        return self._revision_manager
+
+
+class RevisionDetailMixin(RevisionMixin):
     def get_revision(self):
         if not hasattr(self, '_revision'):
-            revision_manager = RevisionManager(token=settings.VERBA_GITHUB_TOKEN)
-
             try:
-                self._revision = revision_manager.get_by_name(self.kwargs['revision_name'])
+                self._revision = self.revision_manager.get_by_name(self.kwargs['revision_name'])
             except RevisionNotFoundException as e:
                 raise Http404(e)
         return self._revision
 
 
-class RevisionDetail(RevisionMixin, TemplateView):
+class RevisionList(RevisionMixin, TemplateView):
+    http_method_names = ['get']
+    template_name = 'revision/list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(RevisionList, self).get_context_data(**kwargs)
+        context['revisions'] = self.revision_manager.get_all()
+        return context
+
+
+class RevisionDetail(RevisionDetailMixin, TemplateView):
     http_method_names = ['get']
     template_name = 'revision/detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(RevisionDetail, self).get_context_data(**kwargs)
-
         context['revision'] = self.get_revision()
         return context
 
 
-class RevisionFileDetail(RevisionMixin, FormView):
-    initial = {}
+class RevisionFileDetail(RevisionDetailMixin, FormView):
     form_class = ContentForm
-
     template_name = 'revision/detail.html'
 
     def get_revision_file(self):
@@ -65,6 +67,7 @@ class RevisionFileDetail(RevisionMixin, FormView):
 
     def form_valid(self, form):
         form.save()
+        messages.success(self.request, 'File changed.')
         return super(RevisionFileDetail, self).form_valid(form)
 
     def get_success_url(self):
@@ -79,3 +82,21 @@ class RevisionFileDetail(RevisionMixin, FormView):
         })
 
         return context
+
+
+class NewRevision(RevisionMixin, FormView):
+    form_class = NewRevisionForm
+    template_name = 'revision/new.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(NewRevision, self).get_form_kwargs()
+        kwargs['revision_manager'] = self.revision_manager
+        return kwargs
+
+    def form_valid(self, form):
+        self.revision = form.save()
+        messages.success(self.request, 'Reviews created.')
+        return super(NewRevision, self).form_valid(form)
+
+    def get_success_url(self):
+        return self.revision.get_absolute_url()

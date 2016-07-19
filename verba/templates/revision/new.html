@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div><a href="{% url 'revision:list' %}">Back</a></div>
+<h1>New Revision</h1>
+
+<form action="" method="post">{% csrf_token %}
+  {{ form }}
+
+  <input type="submit" name="Save" value="Save">
+</form>
+{% endblock content %}

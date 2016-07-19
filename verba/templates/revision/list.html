@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>List of Revisions</h1>
+<h1>List of Revisions  - <a href="{% url 'revision:new' %}">New</a></h1>
 
 {% for revision in revisions %}
   <div>

@@ -1,6 +1,18 @@
 from django import forms
 
 
+class NewRevisionForm(forms.Form):
+    title = forms.CharField(max_length=30)
+
+    def __init__(self, *args, **kwargs):
+        self.revision_manager = kwargs.pop('revision_manager')
+        super(NewRevisionForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        title = self.cleaned_data['title']
+        return self.revision_manager.create(title)
+
+
 class ContentForm(forms.Form):
     content = forms.CharField(widget=forms.Textarea(attrs={'rows': 30, 'cols': 100}))
 
