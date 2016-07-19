@@ -5,7 +5,7 @@
 
 {% for revision in revisions %}
   <div>
-    <a href="{{ revision.get_absolute_url }}">{{ revision.short_title }}</a></i>
+    <a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i>
   </div>
 {% empty %}
   <div>No revisions exist.</div>

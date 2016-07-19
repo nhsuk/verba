@@ -21,7 +21,7 @@ class RevisionDetailMixin(RevisionMixin):
     def get_revision(self):
         if not hasattr(self, '_revision'):
             try:
-                self._revision = self.revision_manager.get_by_name(self.kwargs['revision_name'])
+                self._revision = self.revision_manager.get_by_id(self.kwargs['revision_id'])
             except RevisionNotFoundException as e:
                 raise Http404(e)
         return self._revision

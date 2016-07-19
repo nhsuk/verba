@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Send for approval revision <strong>{{ revision.short_title }}</strong></h1>
+<h1>Send for approval revision <strong>{{ revision.title }}</strong></h1>
 
 <div>
   You are confirming that you have finished working on this revision
@@ -16,6 +16,6 @@
   {{ form.as_p }}
 
   <input type="submit" name="Send for approval" value="Send for approval">
-  <a href="{% url 'revision:detail' revision.name %}">Cancel</a>
+  <a href="{{ revision.get_absolute_url }}">Cancel</a>
 </form>
 {% endblock content %}

@@ -39,7 +39,7 @@ class SendForApprovalForm(forms.Form):
 
         initial = kwargs.get('initial', {})
         initial.update({
-            'title': self.revision.short_title,
+            'title': self.revision.title,
             'description': self.revision.description,
         })
         kwargs['initial'] = initial
