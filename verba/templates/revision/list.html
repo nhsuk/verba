@@ -1,14 +1,25 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<h1>List of Revisions  - <a href="{% url 'revision:new' %}">New</a></h1>
+{% block title %}Revision{% endblock %}
+{% block actions %}
+<a href="{% url 'revision:new' %}" class="btn btn-primary-outline">New</a>
+{% endblock %}
 
-{% for revision in revisions %}
-  <div>
-    <a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i> -
-    {% if revision.is_in_review %}IN REVIEW{% else %}IN PROGRESS{% endif %}
-  </div>
-{% empty %}
-  <div>No revisions exist.</div>
-{% endfor %}
+{% block content %}
+{% if revisions %}
+  <ul class="list-group">
+  {% for revision in revisions %}
+    <li class="list-group-item">
+      <a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i>
+
+      {% if revision.is_in_review %}
+      <span class="label label-success">In Review</span>
+      {% else %}
+      <span class="label label-primary">In Progress</span>
+      {% endif %}
+    </li>
+  {% empty %}
+    <div>No revisions exist.</div>
+  {% endfor %}
+{% endif %}
 {% endblock content %}

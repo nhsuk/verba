@@ -1,7 +1,15 @@
 from django import forms
 
 
-class NewRevisionForm(forms.Form):
+class BaseForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(BaseForm, self).__init__(*args, **kwargs)
+
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+
+
+class NewRevisionForm(BaseForm):
     title = forms.CharField(max_length=30)
 
     def __init__(self, *args, **kwargs):
@@ -13,7 +21,7 @@ class NewRevisionForm(forms.Form):
         return self.revision_manager.create(title)
 
 
-class ContentForm(forms.Form):
+class ContentForm(BaseForm):
     content = forms.CharField(widget=forms.Textarea(attrs={'rows': 30, 'cols': 100}))
 
     def __init__(self, *args, **kwargs):
@@ -30,7 +38,7 @@ class ContentForm(forms.Form):
         self.revision_file.change_content(new_content)
 
 
-class SendForApprovalForm(forms.Form):
+class SendForApprovalForm(BaseForm):
     title = forms.CharField(max_length=50)
     description = forms.CharField(widget=forms.Textarea(attrs={'rows': 10, 'cols': 50}))
 

@@ -1,29 +1,32 @@
 {% extends 'base.html' %}
 
+{% block title %}<strong>{{ revision.title }}</strong>{% endblock %}
+{% block actions %}
+<a href="{% url 'revision:send-for-approval' revision.id %}" class="btn btn-primary-outline">Send for approval</a>
+{% endblock %}
+
 {% block content %}
-<div>
-  <a href="{% url 'revision:list' %}">Back</a>  -
-  <a href="{% url 'revision:send-for-approval' revision.id %}">Send for approval</a>
-</div>
-<h1>Revision <strong>{{ revision.title }}</strong></h1>
-
-<div id="wrap">
-  <div id="left_col">
-    {% for rev_file in revision.get_files %}
-    <div>
-      <a href="{{ rev_file.get_absolute_url }}">{{ rev_file.path }}</a>
+<div class="row">
+    <div class="col-sm-3">
+      {% for rev_file in revision.get_files %}
+      <div>
+        <a href="{{ rev_file.get_absolute_url }}">{{ rev_file.path }}</a>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
 
-  <div id="right_col">
-    {% if revision_file %}
-    <form action="" method="post">{% csrf_token %}
-      {{ form }}
+    <div class="col-sm-9">
+      {% if revision_file %}
+      <form action="" method="post">
+        {% include "revision/include/form.html" %}
 
-      <input type="submit" name="Save" value="Save">
-    </form>
-    {% endif %}
+        <button type="submit" class="btn btn-primary">Save</button>
+      </form>
+      {% else %}
+      <div class="bd-callout m-t-0">
+        Please select a file you want to change from the left sidebar.
+      </div>
+      {% endif %}
+    </div>
   </div>
-</div>
 {% endblock content %}

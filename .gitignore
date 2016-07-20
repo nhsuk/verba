@@ -59,7 +59,6 @@ verba/settings/local.py
 verba/settings/production.py
 
 # collect static output directory
-verba/assets/
 verba/static/
 
 .DS_Store
