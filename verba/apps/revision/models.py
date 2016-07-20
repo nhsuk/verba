@@ -3,15 +3,9 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 
-from .github_api import get_repo, create_file, update_file
+from .github_api import get_repo, create_file, update_file, get_dir_contents
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
 from .settings import config
-
-
-def abs_path(path):
-    if path.startswith('/'):
-        return path
-    return '/{}'.format(path)
 
 
 def get_verba_branch_name(revision_id):
@@ -55,7 +49,7 @@ class RevisionFile(object):
     def change_content(self, new_content):
         update_file(
             self._repo,
-            path=abs_path(self._gitfile.path),
+            path=self._gitfile.path,
             message='[ci skip] Change file {}'.format(self.path),
             content=new_content,
             branch=self.branch_name
@@ -93,9 +87,7 @@ class Revision(object):
         return file_name.split('.')[-1].lower() == 'md'
 
     def get_files(self):
-        gitfiles = self._repo.get_dir_contents(
-            abs_path(config.PATHS.CONTENT_FOLDER), self.branch_name
-        )
+        gitfiles = get_dir_contents(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
 
         files = []
         for gitfile in gitfiles:
@@ -175,13 +167,12 @@ class RevisionManager(object):
         self._repo.create_git_ref(branch_ref, sha)
 
         # create revision log file in log folder
-        revision_log_file_path = abs_path(
-            '{}{}_{}'.format(
-                config.PATHS.REVISIONS_LOG_FOLDER,
-                timezone.now().strftime('%Y.%m.%d_%H.%M'),
-                branch_name
-            )
+        revision_log_file_path = '{}{}_{}'.format(
+            config.PATHS.REVISIONS_LOG_FOLDER,
+            timezone.now().strftime('%Y.%m.%d_%H.%M'),
+            branch_name
         )
+
         create_file(
             self._repo,
             path=revision_log_file_path,
