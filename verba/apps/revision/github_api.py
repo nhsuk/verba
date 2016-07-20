@@ -1,12 +1,12 @@
 import github
 import base64
 
-from django.conf import settings
+from .settings import config
 
 
 def get_repo(token):
     gh = github.Github(login_or_token=token)
-    return gh.get_repo(settings.VERBA_GITHUB_REPO)
+    return gh.get_repo(config.REPO)
 
 
 def create_or_update_file(repo, path, message, content, branch=github.GithubObject.NotSet, update=True):

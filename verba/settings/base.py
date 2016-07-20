@@ -119,7 +119,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
-VERBA_GITHUB_REPO = None  # GitHub repo with content files to edit in format '<org>/<repo>'
+VERBA_CONFIG = {
+    'REPO': None,   # GitHub repo with content files to edit in format '<org>/<repo>'
+    'PATHS': {
+        'CONTENT_FOLDER': 'pages/',
+        'REVISIONS_LOG_FOLDER': 'content-revision-logs/',
+    },
+    'BRANCHES': {
+        'NAMESPACE': 'content-',
+        'BASE': 'develop',
+    },
+    'LABELS': {
+        'IN_PROGRESS': 'do not merge',
+        'IN_REVIEW': 'for review',
+    }
+}
 
 
 # .local.py overrides all the common settings.

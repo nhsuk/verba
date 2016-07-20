@@ -5,14 +5,7 @@ from django.utils.crypto import get_random_string
 
 from .github_api import get_repo, create_file, update_file
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
-
-CONTENT_PATH = 'pages/'
-REVISIONS_LOG_FOLDER = 'content-revision-logs/'
-BRANCH_NAMESPACE = 'content-'
-BASE_BRANCH = 'develop'
-
-LABEL_IN_PROGRESS = 'do not merge'
-LABEL_IN_REVIEW = 'for review'
+from .settings import config
 
 
 def abs_path(path):
@@ -22,22 +15,22 @@ def abs_path(path):
 
 
 def get_verba_branch_name(revision_id):
-    return '{}{}'.format(BRANCH_NAMESPACE, revision_id)
+    return '{}{}'.format(config.BRANCHES.NAMESPACE, revision_id)
 
 
 def is_verba_branch(name):
-    return name.startswith(BRANCH_NAMESPACE)
+    return name.startswith(config.BRANCHES.NAMESPACE)
 
 
 def get_revision_id(verba_branch_name):
     if not is_verba_branch(verba_branch_name):
         return None
-    return verba_branch_name[len(BRANCH_NAMESPACE):]
+    return verba_branch_name[len(config.BRANCHES.NAMESPACE):]
 
 
 class RevisionFile(object):
     def __init__(self, repo, revision_id, gitfile):
-        assert gitfile.path.startswith(CONTENT_PATH)
+        assert gitfile.path.startswith(config.PATHS.CONTENT_FOLDER)
 
         self.revision_id = revision_id
         self._repo = repo
@@ -53,7 +46,7 @@ class RevisionFile(object):
 
     @property
     def path(self):
-        return self._gitfile.path[len(CONTENT_PATH):]
+        return self._gitfile.path[len(config.PATHS.CONTENT_FOLDER):]
 
     @property
     def content(self):
@@ -101,7 +94,7 @@ class Revision(object):
 
     def get_files(self):
         gitfiles = self._repo.get_dir_contents(
-            abs_path(CONTENT_PATH), self.branch_name
+            abs_path(config.PATHS.CONTENT_FOLDER), self.branch_name
         )
 
         files = []
@@ -123,18 +116,18 @@ class Revision(object):
     def mark_as_in_progress(self):
         # get existing labels, remove the 'in review' one and add the 'in progress' one
         labels = [l.name for l in self._issue.get_labels()]
-        if LABEL_IN_REVIEW in labels:
-            labels.remove(LABEL_IN_REVIEW)
-        labels.append(LABEL_IN_PROGRESS)
+        if config.LABELS.IN_REVIEW in labels:
+            labels.remove(config.LABELS.IN_REVIEW)
+        labels.append(config.LABELS.IN_PROGRESS)
 
         self._issue.set_labels(*labels)
 
     def mark_as_in_review(self):
         # get existing labels, remove the 'in progress' one and add the 'in review' one
         labels = [l.name for l in self._issue.get_labels()]
-        if LABEL_IN_PROGRESS in labels:
-            labels.remove(LABEL_IN_PROGRESS)
-        labels.append(LABEL_IN_REVIEW)
+        if config.LABELS.IN_PROGRESS in labels:
+            labels.remove(config.LABELS.IN_PROGRESS)
+        labels.append(config.LABELS.IN_REVIEW)
 
         self._issue.set_labels(*labels)
 
@@ -178,13 +171,13 @@ class RevisionManager(object):
 
         # create branch
         branch_ref = 'refs/heads/{}'.format(branch_name)
-        sha = self._repo.get_branch(BASE_BRANCH).commit.sha
+        sha = self._repo.get_branch(config.BRANCHES.BASE).commit.sha
         self._repo.create_git_ref(branch_ref, sha)
 
         # create revision log file in log folder
         revision_log_file_path = abs_path(
             '{}{}_{}'.format(
-                REVISIONS_LOG_FOLDER,
+                config.PATHS.REVISIONS_LOG_FOLDER,
                 timezone.now().strftime('%Y.%m.%d_%H.%M'),
                 branch_name
             )
@@ -201,7 +194,7 @@ class RevisionManager(object):
         pull = self._repo.create_pull(
             title=title,
             body='Content revision {}'.format(title),
-            base=BASE_BRANCH,
+            base=config.BRANCHES.BASE,
             head=branch_name
         )
 
