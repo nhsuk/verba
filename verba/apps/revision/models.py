@@ -105,23 +105,37 @@ class Revision(object):
                 return rev_file
         raise RevisionFileNotFoundException("File '{}' not found".format(path))
 
+    @property
+    def labels(self):
+        return [label.name for label in self._issue.get_labels()]
+
+    @labels.setter
+    def labels(self, labels):
+        self._issue.set_labels(*labels)
+
+    def is_in_progress(self):
+        return config.LABELS.IN_PROGRESS in self.labels
+
+    def is_in_review(self):
+        return config.LABELS.IN_REVIEW in self.labels
+
     def mark_as_in_progress(self):
         # get existing labels, remove the 'in review' one and add the 'in progress' one
-        labels = [l.name for l in self._issue.get_labels()]
+        labels = list(self.labels)
         if config.LABELS.IN_REVIEW in labels:
             labels.remove(config.LABELS.IN_REVIEW)
         labels.append(config.LABELS.IN_PROGRESS)
 
-        self._issue.set_labels(*labels)
+        self.labels = labels
 
     def mark_as_in_review(self):
         # get existing labels, remove the 'in progress' one and add the 'in review' one
-        labels = [l.name for l in self._issue.get_labels()]
+        labels = list(self.labels)
         if config.LABELS.IN_PROGRESS in labels:
             labels.remove(config.LABELS.IN_PROGRESS)
         labels.append(config.LABELS.IN_REVIEW)
 
-        self._issue.set_labels(*labels)
+        self.labels = labels
 
     def send_for_approval(self, title, description):
         self.mark_as_in_review()

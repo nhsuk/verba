@@ -5,7 +5,8 @@
 
 {% for revision in revisions %}
   <div>
-    <a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i>
+    <a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i> -
+    {% if revision.is_in_review %}IN REVIEW{% else %}IN PROGRESS{% endif %}
   </div>
 {% empty %}
   <div>No revisions exist.</div>
