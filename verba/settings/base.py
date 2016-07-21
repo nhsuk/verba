@@ -133,7 +133,11 @@ VERBA_CONFIG = {
         'IN_PROGRESS': 'do not merge',
         'IN_REVIEW': 'for review',
     },
-    'MAX_REVISIONS': 5
+    'MAX_REVISIONS': 5,
+    'PREVIEW': {
+        'TIMEOUT': 120,  # in secs
+        'URL_GENERATOR': lambda rev: None
+    }
 }
 
 from django.contrib.messages import constants as message_constants

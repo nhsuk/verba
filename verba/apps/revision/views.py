@@ -1,12 +1,16 @@
+import requests
+
 from django.conf import settings
 from django.http import Http404
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.views.generic import TemplateView, FormView
 
 from .models import RevisionManager
 from .exceptions import RevisionNotFoundException
 from .forms import ContentForm, NewRevisionForm, SendForApprovalForm
+from .settings import config
 
 
 class RevisionMixin(object):
@@ -128,3 +132,36 @@ class SendForApproval(RevisionDetailMixin, FormView):
 
     def get_success_url(self):
         return reverse('revision:list')
+
+
+class Preview(RevisionDetailMixin, TemplateView):
+    REFRESH_WINDOW = 5  # in sec
+    template_name = 'revision/preview.html'
+
+    def get(self, request, *args, **kwargs):
+        url = self.get_revision().get_preview_url()
+
+        response = requests.get(url)
+        if response.ok:
+            return redirect(url)
+
+        return super(Preview, self).get(request, *args, **kwargs)
+
+    def get_refresh_count(self):
+        try:
+            return int(self.request.GET.get('refresh'))
+        except:
+            return 0
+
+    def get_context_data(self, **kwargs):
+        context = super(Preview, self).get_context_data(**kwargs)
+
+        refresh_count = self.get_refresh_count()
+
+        context.update({
+            'revision': self.get_revision(),
+            'refresh_count': refresh_count + 1,
+            'refresh_win': self.REFRESH_WINDOW,
+            'error': refresh_count >= (config.PREVIEW.TIMEOUT / self.REFRESH_WINDOW)
+        })
+        return context

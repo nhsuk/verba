@@ -29,4 +29,9 @@ urlpatterns = [
         views.SendForApproval.as_view(),
         name='send-for-approval'
     ),
+    url(
+        r'^preview/(?P<revision_id>[\w-]+)/$',
+        views.Preview.as_view(),
+        name='preview'
+    ),
 ]

@@ -73,9 +73,12 @@ class Revision(object):
         self._pull = pull
 
     @property
+    def _issue_nr(self):
+        return int(self._pull.issue_url.split('/')[-1].strip())
+
+    @property
     def _issue(self):
-        issue_id = int(self._pull.issue_url.split('/')[-1].strip())
-        return self._repo.get_issue(issue_id)
+        return self._repo.get_issue(self._issue_nr)
 
     @property
     def branch_name(self):
@@ -151,6 +154,13 @@ class Revision(object):
 
     def get_absolute_url(self):
         return reverse('revision:detail', args=[self.id])
+
+    def get_preview_url(self):
+        url = config.PREVIEW.URL_GENERATOR(self)
+        if not url:
+            raise NotImplementedError("Please specify VERBA_CONFIG['PREVIEW']['URL_GENERATOR']")
+
+        return url
 
 
 class RevisionManager(object):
