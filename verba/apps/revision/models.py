@@ -3,9 +3,9 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 
-from .github_api import get_repo, create_file, update_file, get_dir_files, get_file_contents
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
 from .settings import config
+from . import github_api
 
 
 def get_verba_branch_name(revision_id):
@@ -34,7 +34,7 @@ class RevisionFile(object):
     @property
     def _gitfile(self):
         if not self.__gitfile:
-            self.__gitfile = get_file_contents(self._repo, self._git_path, self.branch_name)
+            self.__gitfile = github_api.get_file_contents(self._repo, self._git_path, self.branch_name)
         return self.__gitfile
 
     @property
@@ -54,7 +54,7 @@ class RevisionFile(object):
         return self._gitfile.decoded_content
 
     def change_content(self, new_content):
-        update_file(
+        github_api.update_file(
             self._repo,
             path=self._gitfile.path,
             message='[ci skip] Change file {}'.format(self.path),
@@ -97,7 +97,7 @@ class Revision(object):
         return file_name.split('.')[-1].lower() == 'md'
 
     def get_files(self):
-        filepaths = get_dir_files(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
+        filepaths = github_api.get_dir_files(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
 
         files = []
         for filepath in filepaths:
@@ -150,6 +150,9 @@ class Revision(object):
 
     def send_for_approval(self, title, description):
         self.mark_as_in_review()
+
+        github_api.add_assignees_to_issue(self._repo, self._issue_nr, config.REVIEW_GITHUB_USERS)
+
         self._pull.edit(title=title, body=description)
 
     def get_absolute_url(self):
@@ -165,7 +168,7 @@ class Revision(object):
 
 class RevisionManager(object):
     def __init__(self, token):
-        self._repo = get_repo(token)
+        self._repo = github_api.get_repo(token)
 
     def get_all(self):
         revisions = []
@@ -205,7 +208,7 @@ class RevisionManager(object):
             branch_name
         )
 
-        create_file(
+        github_api.create_file(
             self._repo,
             path=revision_log_file_path,
             message='Create revision log file',

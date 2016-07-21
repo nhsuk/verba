@@ -120,23 +120,24 @@ AUTH_PASSWORD_VALIDATORS = [
 
 VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
 VERBA_CONFIG = {
-    'REPO': None,   # GitHub repo with content files to edit in format '<org>/<repo>'
+    'REPO': None,  # GitHub repo with content files to edit in format '<org>/<repo>'
     'PATHS': {
-        'CONTENT_FOLDER': 'pages/',
-        'REVISIONS_LOG_FOLDER': 'content-revision-logs/',
+        'CONTENT_FOLDER': 'pages/',  # path to folder containing the content files
+        'REVISIONS_LOG_FOLDER': 'content-revision-logs/',  # path to folder that will include revision files
     },
     'BRANCHES': {
-        'NAMESPACE': 'content-',
-        'BASE': 'develop',
+        'NAMESPACE': 'content-',  # prefix of the branches that will be created
+        'BASE': 'develop',  # base branch for PRs
     },
     'LABELS': {
-        'IN_PROGRESS': 'do not merge',
-        'IN_REVIEW': 'for review',
+        'IN_PROGRESS': 'do not merge',  # label to apply for newly created PRs
+        'IN_REVIEW': 'for review',  # label to apply for PRs ready for review
     },
-    'MAX_REVISIONS': 5,
+    'MAX_REVISIONS': 5,  # max number of revisions allowed
+    'REVIEW_GITHUB_USERS': [],  # PR will be assigned to these github usernames when sending a review for approval
     'PREVIEW': {
         'TIMEOUT': 120,  # in secs
-        'URL_GENERATOR': lambda rev: None
+        'URL_GENERATOR': lambda rev: None  # lambda generator or the preview url
     }
 }
 

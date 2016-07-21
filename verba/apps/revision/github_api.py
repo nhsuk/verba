@@ -57,3 +57,16 @@ def get_dir_files(repo, path, ref=github.GithubObject.NotSet):
 
 def get_file_contents(repo, path, ref=github.GithubObject.NotSet):
     return repo.get_file_contents(abs_path(path), ref=ref)
+
+
+def add_assignees_to_issue(repo, issue_nr, assignees):
+    assert isinstance(assignees, list), assignees
+
+    post_parameters = {
+        'assignees': assignees
+    }
+    headers, data = repo._requester.requestJsonAndCheck(
+        "POST",
+        repo.url + "/issues/" + str(issue_nr) + "/assignees",
+        input=post_parameters
+    )
