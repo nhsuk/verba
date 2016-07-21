@@ -17,3 +17,7 @@
 .bd-callout+.bd-callout {
     margin-top: -.25rem;
 }
+
+.actions {
+  float: right;
+}
