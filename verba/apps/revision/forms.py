@@ -1,5 +1,7 @@
 from django import forms
 
+from .settings import config
+
 
 class BaseForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -15,6 +17,17 @@ class NewRevisionForm(BaseForm):
     def __init__(self, *args, **kwargs):
         self.revision_manager = kwargs.pop('revision_manager')
         super(NewRevisionForm, self).__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super(NewRevisionForm, self).clean(*args, **kwargs)
+
+        if self._errors:  # if there are already errors, skip and return immediately
+            return
+
+        if len(self.revision_manager.get_all()) >= config.MAX_REVISIONS:
+            raise forms.ValidationError(
+                'Reached max number of revisions allowed ({})'.format(config.MAX_REVISIONS)
+            )
 
     def save(self):
         title = self.cleaned_data['title']

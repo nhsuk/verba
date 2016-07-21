@@ -132,7 +132,8 @@ VERBA_CONFIG = {
     'LABELS': {
         'IN_PROGRESS': 'do not merge',
         'IN_REVIEW': 'for review',
-    }
+    },
+    'MAX_REVISIONS': 5
 }
 
 from django.contrib.messages import constants as message_constants
