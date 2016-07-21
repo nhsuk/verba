@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 
-from .github_api import get_repo, create_file, update_file, get_dir_contents
+from .github_api import get_repo, create_file, update_file, get_dir_files, get_file_contents
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
 from .settings import config
 
@@ -23,12 +23,19 @@ def get_revision_id(verba_branch_name):
 
 
 class RevisionFile(object):
-    def __init__(self, repo, revision_id, gitfile):
-        assert gitfile.path.startswith(config.PATHS.CONTENT_FOLDER)
+    def __init__(self, repo, git_path, revision_id, gitfile=None):
+        assert git_path.startswith(config.PATHS.CONTENT_FOLDER)
 
         self.revision_id = revision_id
+        self._git_path = git_path
         self._repo = repo
-        self._gitfile = gitfile
+        self.__gitfile = gitfile
+
+    @property
+    def _gitfile(self):
+        if not self.__gitfile:
+            self.__gitfile = get_file_contents(self._repo, self._git_path, self.branch_name)
+        return self.__gitfile
 
     @property
     def branch_name(self):
@@ -40,7 +47,7 @@ class RevisionFile(object):
 
     @property
     def path(self):
-        return self._gitfile.path[len(config.PATHS.CONTENT_FOLDER):]
+        return self._git_path[len(config.PATHS.CONTENT_FOLDER):]
 
     @property
     def content(self):
@@ -87,13 +94,14 @@ class Revision(object):
         return file_name.split('.')[-1].lower() == 'md'
 
     def get_files(self):
-        gitfiles = get_dir_contents(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
+        filepaths = get_dir_files(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
 
         files = []
-        for gitfile in gitfiles:
-            if self.is_content_file(gitfile.name):
+        for filepath in filepaths:
+            if self.is_content_file(filepath):
+                git_path = '{}{}'.format(config.PATHS.CONTENT_FOLDER, filepath)
                 files.append(
-                    RevisionFile(self._repo, self.id, gitfile)
+                    RevisionFile(self._repo, git_path, self.id)
                 )
 
         return files

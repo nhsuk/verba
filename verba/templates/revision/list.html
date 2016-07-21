@@ -18,8 +18,8 @@
       <span class="label label-primary">In Progress</span>
       {% endif %}
     </li>
-  {% empty %}
-    <div>No revisions exist.</div>
   {% endfor %}
+{% else %}
+  <div>No revisions exist.</div>
 {% endif %}
 {% endblock content %}

@@ -49,5 +49,11 @@ def update_file(repo, path, message, content, branch=github.GithubObject.NotSet)
     create_or_update_file(repo, path, message, content, branch=branch, update=True)
 
 
-def get_dir_contents(repo, path, ref=github.GithubObject.NotSet):
-    return repo.get_dir_contents(abs_path(path), ref)
+def get_dir_files(repo, path, ref=github.GithubObject.NotSet):
+    sha = '{}:{}'.format(ref, path)
+    git_tree = repo.get_git_tree(sha, recursive=True)
+    return [tree_el.path for tree_el in git_tree.tree]
+
+
+def get_file_contents(repo, path, ref=github.GithubObject.NotSet):
+    return repo.get_file_contents(abs_path(path), ref=ref)
