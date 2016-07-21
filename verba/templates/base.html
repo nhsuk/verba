@@ -25,15 +25,15 @@
   </head>
 
   <body>
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} p-t-0 p-b-0" role="alert">{{ message }}</div>
+    {% endfor %}
+
+    <nav id="top-header" class="navbar navbar-light bg-faded">
+      <a class="navbar-brand" href="{% url 'revision:list' %}">Verba - Content Editor for Content Designers</a>
+    </nav>
+
     <div class="container">
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} p-t-0 p-b-0" role="alert">{{ message }}</div>
-      {% endfor %}
-
-      <nav class="navbar navbar-light bg-faded">
-        <a class="navbar-brand" href="{% url 'revision:list' %}">Verba - Content Editor for Content Designers</a>
-      </nav>
-
       <h1 class="m-t-2 m-b-2">
         {% block title %}{% endblock %}
         <span class="actions">{% block actions %}{% endblock %}</span>

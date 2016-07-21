@@ -17,7 +17,14 @@
 .bd-callout+.bd-callout {
     margin-top: -.25rem;
 }
-
+#top-header {
+  background-color: #0072c6;
+  padding: 1.5rem 1rem;
+  border-radius: 0;
+}
+#top-header a {
+  color: #fff;
+}
 .actions {
   float: right;
 }
