@@ -5,7 +5,7 @@ from django.utils.crypto import get_random_string
 
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
 from .settings import config
-from . import github_api
+from . import github
 
 
 def get_verba_branch_name(revision_id):
@@ -22,44 +22,34 @@ def get_revision_id(verba_branch_name):
     return verba_branch_name[len(config.BRANCHES.NAMESPACE):]
 
 
+def is_content_file(file_name):
+    # TODO review
+    return file_name.split('.')[-1].lower() == 'md'
+
+
 class RevisionFile(object):
-    def __init__(self, repo, git_path, revision_id, gitfile=None):
-        assert git_path.startswith(config.PATHS.CONTENT_FOLDER)
+    def __init__(self, _file, revision_id):
+        assert _file.path.startswith(config.PATHS.CONTENT_FOLDER)
 
         self.revision_id = revision_id
-        self._git_path = git_path
-        self._repo = repo
-        self.__gitfile = gitfile
-
-    @property
-    def _gitfile(self):
-        if not self.__gitfile:
-            self.__gitfile = github_api.get_file_contents(self._repo, self._git_path, self.branch_name)
-        return self.__gitfile
-
-    @property
-    def branch_name(self):
-        return get_verba_branch_name(self.revision_id)
+        self._file = _file
 
     @property
     def name(self):
-        return self._gitfile.name
+        return self._file.name
 
     @property
     def path(self):
-        return self._git_path[len(config.PATHS.CONTENT_FOLDER):]
+        return self._file.path[len(config.PATHS.CONTENT_FOLDER):]
 
     @property
     def content(self):
-        return self._gitfile.decoded_content
+        return self._file.content
 
     def change_content(self, new_content):
-        github_api.update_file(
-            self._repo,
-            path=self._gitfile.path,
-            message='[ci skip] Change file {}'.format(self.path),
-            content=new_content,
-            branch=self.branch_name
+        self._file.change_content(
+            new_content,
+            message='[ci skip] Change file {}'.format(self.path)
         )
 
     def get_absolute_url(self):
@@ -67,22 +57,9 @@ class RevisionFile(object):
 
 
 class Revision(object):
-    def __init__(self, repo, revision_id, pull):
+    def __init__(self, pull, revision_id):
         self.id = revision_id
-        self._repo = repo
         self._pull = pull
-
-    @property
-    def _issue_nr(self):
-        return int(self._pull.issue_url.split('/')[-1].strip())
-
-    @property
-    def _issue(self):
-        return self._repo.get_issue(self._issue_nr)
-
-    @property
-    def branch_name(self):
-        return get_verba_branch_name(self.id)
 
     @property
     def title(self):
@@ -90,70 +67,54 @@ class Revision(object):
 
     @property
     def description(self):
-        return self._pull.body
-
-    def is_content_file(self, file_name):
-        # TODO review
-        return file_name.split('.')[-1].lower() == 'md'
+        return self._pull.description
 
     def get_files(self):
-        filepaths = github_api.get_dir_files(self._repo, config.PATHS.CONTENT_FOLDER, self.branch_name)
+        git_files = self._pull.branch.get_dir_files(config.PATHS.CONTENT_FOLDER)
 
         files = []
-        for filepath in filepaths:
-            if self.is_content_file(filepath):
-                git_path = '{}{}'.format(config.PATHS.CONTENT_FOLDER, filepath)
+        for git_file in git_files:
+            if is_content_file(git_file.path):
                 files.append(
-                    RevisionFile(self._repo, git_path, self.id)
+                    RevisionFile(git_file, self.id)
                 )
 
         return files
 
     def get_file_by_path(self, path):
-        rev_files = self.get_files()
-        for rev_file in rev_files:
+        for rev_file in self.get_files():
             if rev_file.path.lower() == path.lower():
                 return rev_file
         raise RevisionFileNotFoundException("File '{}' not found".format(path))
 
-    @property
-    def labels(self):
-        return [label.name for label in self._issue.get_labels()]
-
-    @labels.setter
-    def labels(self, labels):
-        self._issue.set_labels(*labels)
-
     def is_in_progress(self):
-        return config.LABELS.IN_PROGRESS in self.labels
+        return config.LABELS.IN_PROGRESS in self._pull.labels
 
     def is_in_review(self):
-        return config.LABELS.IN_REVIEW in self.labels
+        return config.LABELS.IN_REVIEW in self._pull.labels
 
     def mark_as_in_progress(self):
         # get existing labels, remove the 'in review' one and add the 'in progress' one
-        labels = list(self.labels)
+        labels = list(self._pull.labels)
         if config.LABELS.IN_REVIEW in labels:
             labels.remove(config.LABELS.IN_REVIEW)
         labels.append(config.LABELS.IN_PROGRESS)
 
-        self.labels = labels
+        self._pull.labels = labels
 
     def mark_as_in_review(self):
         # get existing labels, remove the 'in progress' one and add the 'in review' one
-        labels = list(self.labels)
+        labels = list(self._pull.labels)
         if config.LABELS.IN_PROGRESS in labels:
             labels.remove(config.LABELS.IN_PROGRESS)
         labels.append(config.LABELS.IN_REVIEW)
 
-        self.labels = labels
+        self._pull.labels = labels
 
     def send_for_approval(self, title, description):
         self.mark_as_in_review()
-
-        github_api.add_assignees_to_issue(self._repo, self._issue_nr, config.REVIEW_GITHUB_USERS)
-
-        self._pull.edit(title=title, body=description)
+        self._pull.add_assignees(config.REVIEW_GITHUB_USERS)
+        self._pull.edit(title=title, description=description)
 
     def get_absolute_url(self):
         return reverse('revision:detail', args=[self.id])
@@ -168,18 +129,18 @@ class Revision(object):
 
 class RevisionManager(object):
     def __init__(self, token):
-        self._repo = github_api.get_repo(token)
+        self._repo = github.get_repo(token)
 
     def get_all(self):
         revisions = []
         for pull in self._repo.get_pulls():
-            revision_id = get_revision_id(pull.head.ref)
+            revision_id = get_revision_id(pull.head_ref)
 
             if not revision_id:
                 continue
 
             revisions.append(
-                Revision(self._repo, revision_id, pull)
+                Revision(pull, revision_id)
             )
         return revisions
 
@@ -197,9 +158,10 @@ class RevisionManager(object):
         branch_name = get_verba_branch_name(revision_id)
 
         # create branch
-        branch_ref = 'refs/heads/{}'.format(branch_name)
-        sha = self._repo.get_branch(config.BRANCHES.BASE).commit.sha
-        self._repo.create_git_ref(branch_ref, sha)
+        branch = self._repo.create_branch(
+            new_branch=branch_name,
+            from_branch=config.BRANCHES.BASE
+        )
 
         # create revision log file in log folder
         revision_log_file_path = '{}{}_{}'.format(
@@ -208,12 +170,10 @@ class RevisionManager(object):
             branch_name
         )
 
-        github_api.create_file(
-            self._repo,
+        branch.create_new_file(
             path=revision_log_file_path,
             message='Create revision log file',
-            content='',
-            branch=branch_name
+            content=''
         )
 
         # create PR
@@ -224,7 +184,7 @@ class RevisionManager(object):
             head=branch_name
         )
 
-        revision = Revision(self._repo, revision_id, pull)
+        revision = Revision(pull, revision_id)
         revision.mark_as_in_progress()
 
         return revision
