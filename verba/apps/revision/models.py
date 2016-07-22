@@ -113,7 +113,7 @@ class Revision(object):
 
     def send_for_approval(self, title, description):
         self.mark_as_in_review()
-        self._pull.add_assignees(config.REVIEW_GITHUB_USERS)
+        self._pull.add_assignees(config.REVIEW_GITHUB_USERS.split(','))
         self._pull.edit(title=title, description=description)
 
     def delete(self):

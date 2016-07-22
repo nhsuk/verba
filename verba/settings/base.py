@@ -36,11 +36,8 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
-    # 'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    # 'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -69,6 +66,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
+STATIC_ROOT = root('staticfiles')
 STATIC_URL = '/static/'
 
 
@@ -88,12 +86,7 @@ TEMPLATES = [
         'OPTIONS': {
             'debug': DEBUG,
             'context_processors': [
-                # 'django.contrib.auth.context_processors.auth',
-                # 'django.template.context_processors.debug',
-                # 'django.template.context_processors.i18n',
-                # 'django.template.context_processors.media',
                 'django.template.context_processors.static',
-                # 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -133,7 +126,7 @@ VERBA_CONFIG = {
         'IN_PROGRESS': 'do not merge',  # label to apply for newly created PRs
         'IN_REVIEW': 'for review',  # label to apply for PRs ready for review
     },
-    'MAX_REVISIONS': 5,  # max number of revisions allowed
+    'MAX_REVISIONS': 3,  # max number of revisions allowed
     'REVIEW_GITHUB_USERS': [],  # PR will be assigned to these github usernames when sending a review for approval
     'PREVIEW': {
         'TIMEOUT': 120,  # in secs
