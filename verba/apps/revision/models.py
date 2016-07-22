@@ -116,6 +116,9 @@ class Revision(object):
         self._pull.add_assignees(config.REVIEW_GITHUB_USERS)
         self._pull.edit(title=title, description=description)
 
+    def delete(self):
+        self._pull.close()
+
     def get_absolute_url(self):
         return reverse('revision:detail', args=[self.id])
 

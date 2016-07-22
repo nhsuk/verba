@@ -34,4 +34,9 @@ urlpatterns = [
         views.Preview.as_view(),
         name='preview'
     ),
+    url(
+        r'^delete/(?P<revision_id>[\w-]+)/$',
+        views.DeleteRevision.as_view(),
+        name='delete'
+    ),
 ]

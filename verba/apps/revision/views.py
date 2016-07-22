@@ -9,7 +9,7 @@ from django.views.generic import TemplateView, FormView
 
 from .models import RevisionManager
 from .exceptions import RevisionNotFoundException
-from .forms import ContentForm, NewRevisionForm, SendForApprovalForm
+from .forms import ContentForm, NewRevisionForm, SendForApprovalForm, DeleteRevisionForm
 from .settings import config
 
 
@@ -165,3 +165,30 @@ class Preview(RevisionDetailMixin, TemplateView):
             'error': refresh_count >= (config.PREVIEW.TIMEOUT / self.REFRESH_WINDOW)
         })
         return context
+
+
+class DeleteRevision(RevisionDetailMixin, FormView):
+    form_class = DeleteRevisionForm
+    template_name = 'revision/delete.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(DeleteRevision, self).get_form_kwargs()
+        kwargs['revision'] = self.get_revision()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, 'Revision deleted.')
+        return super(DeleteRevision, self).form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super(DeleteRevision, self).get_context_data(**kwargs)
+
+        context.update({
+            'revision': self.get_revision()
+        })
+
+        return context
+
+    def get_success_url(self):
+        return reverse('revision:list')

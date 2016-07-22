@@ -2,7 +2,8 @@
 
 {% block title %}<strong>{{ revision.title }}</strong>{% endblock %}
 {% block actions %}
-<a href="{% url 'revision:send-for-approval' revision.id %}" class="btn btn-secondary-outline">Send for approval</a>
+<a href="{% url 'revision:delete' revision.id %}" class="btn btn-danger-outline"">Delete</a>
+<a href="{% url 'revision:send-for-approval' revision.id %}" class="btn btn-success-outline">Send for approval</a>
 <a href="{% url 'revision:preview' revision.id %}" class="btn btn-primary-outline" target="_blank">Preview</a>
 {% endblock %}
 

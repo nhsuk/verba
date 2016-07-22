@@ -125,6 +125,9 @@ class PullRequest(object):
     def edit(self, title, description):
         self._gh_pull.edit(title=title, body=description)
 
+    def close(self):
+        self._gh_pull.edit(state='closed')
+
     @property
     def head_ref(self):
         return self._gh_pull.head.ref

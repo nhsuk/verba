@@ -72,3 +72,12 @@ class SendForApprovalForm(BaseForm):
         description = self.cleaned_data['description']
 
         self.revision.send_for_approval(title, description)
+
+
+class DeleteRevisionForm(BaseForm):
+    def __init__(self, *args, **kwargs):
+        self.revision = kwargs.pop('revision')
+        super(DeleteRevisionForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        self.revision.delete()
