@@ -21,12 +21,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django.contrib.sessions',
+    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles'
 ]
 
 PROJECT_APPS = [
+    'auth',
     'revision',
 ]
 
@@ -35,9 +36,11 @@ INSTALLED_APPS += PROJECT_APPS
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
 
 MIDDLEWARE_CLASSES = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -87,6 +90,7 @@ TEMPLATES = [
             'debug': DEBUG,
             'context_processors': [
                 'django.template.context_processors.static',
+                'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -114,6 +118,10 @@ AUTH_PASSWORD_VALIDATORS = [
 VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
 VERBA_CONFIG = {
     'REPO': None,  # GitHub repo with content files to edit in format '<org>/<repo>'
+    'GITHUB_AUTH': {
+        'CLIENT_ID': None,
+        'CLIENT_SECRET': None,
+    },
     'PATHS': {
         'CONTENT_FOLDER': 'pages/',  # path to folder containing the content files
         'REVISIONS_LOG_FOLDER': 'content-revision-logs/',  # path to folder that will include revision files
@@ -133,6 +141,20 @@ VERBA_CONFIG = {
         'URL_GENERATOR': lambda rev: None  # lambda generator or the preview url
     }
 }
+
+AUTH_USER_MODEL = 'auth.models.VerbaUser'
+LOGIN_URL = 'auth:login'
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+AUTHENTICATION_BACKENDS = (
+    'auth.backends.VerbaBackend',
+)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = False
+
 
 from django.contrib.messages import constants as message_constants
 MESSAGE_TAGS = {

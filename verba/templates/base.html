@@ -31,6 +31,13 @@
 
     <nav id="top-header" class="navbar navbar-light bg-faded">
       <a class="navbar-brand" href="{% url 'revision:list' %}">Verba - Content Editor for Content Designers</a>
+      <span class="navbar-brand fl">
+        {% if user.is_authenticated %}
+        Hi, {{ user.name }}! <a href="{% url 'auth:logout' %}">Logout</a>
+        {% else %}
+        <a href="{% url 'auth:login' %}">Login</a>
+        {% endif %}
+      </span>
     </nav>
 
     <div class="container">

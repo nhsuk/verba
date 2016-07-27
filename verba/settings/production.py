@@ -16,10 +16,12 @@ ADMINS = (
 MANAGERS = ADMINS
 
 MIDDLEWARE_CLASSES = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -29,3 +31,9 @@ VERBA_CONFIG['REPO'] = os.environ["VERBA_REPO"]
 VERBA_CONFIG['REVIEW_GITHUB_USERS'] = os.environ["VERBA_REVIEW_GITHUB_USERS"]
 VERBA_CONFIG['PREVIEW']['URL_GENERATOR'] = \
     lambda rev: os.environ["VERBA_REVIEW_URL_GENERATOR"].format(rev._pull.issue_nr)
+
+
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 300
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
