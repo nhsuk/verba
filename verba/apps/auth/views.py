@@ -8,9 +8,10 @@ from django.shortcuts import resolve_url
 from django.utils.six.moves.urllib.parse import urlparse, urlunparse
 from django.http import QueryDict
 
+from github.auth import get_login_url
+
 from . import login as auth_login, logout as auth_logout
 from .forms import AuthenticationForm
-from .github import get_login_url
 
 
 class LoginView(View):

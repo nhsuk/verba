@@ -1,6 +1,8 @@
+from github import User as GitHubUser
+from github.auth import get_token
+from github.exceptions import AuthValidationError
+
 from . import get_user_model
-from .github import get_token, get_user_data
-from .exceptions import AuthException
 
 
 class VerbaBackend(object):
@@ -15,12 +17,20 @@ class VerbaBackend(object):
         """
         try:
             token = get_token(code)
-        except AuthException:
+        except AuthValidationError:
             return
-        user_data = get_user_data(token)
+        github_user = GitHubUser.get_logged_in(token)
 
         UserModel = get_user_model()
-        return UserModel(user_data['id'], token, user_data=user_data)
+        return UserModel(
+            pk=github_user.username,
+            token=token,
+            user_data={
+                'name': github_user.name,
+                'email': github_user.email,
+                'avatar_url': github_user.avatar_url
+            }
+        )
 
     def get_user(self, pk, token, user_data={}):
         UserModel = get_user_model()

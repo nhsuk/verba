@@ -1,0 +1,9 @@
+{
+    "url": "https://api.github.com/repos/test-owner/test-repo/git/refs/heads/new-branch",
+    "ref": "refs/heads/new-branch",
+    "object": {
+        "url": "https://api.github.com/repos/test-owner/test-repo/git/commits/429f2904961e5b5833a6b15ac592192b5f3b314b",
+        "type": "commit",
+        "sha": "429f2904961e5b5833a6b15ac592192b5f3b314b"
+    }
+}
