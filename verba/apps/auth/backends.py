@@ -21,7 +21,7 @@ class VerbaBackend(object):
             return
         github_user = GitHubUser.get_logged_in(token)
 
-        UserModel = get_user_model()
+        UserModel = get_user_model()  # noqa
         return UserModel(
             pk=github_user.username,
             token=token,
@@ -33,5 +33,5 @@ class VerbaBackend(object):
         )
 
     def get_user(self, pk, token, user_data={}):
-        UserModel = get_user_model()
+        UserModel = get_user_model()  # noqa
         return UserModel(pk, token, user_data=user_data)
