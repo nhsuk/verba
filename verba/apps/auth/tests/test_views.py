@@ -2,53 +2,25 @@ import json
 import responses
 
 from django.conf import settings
-from django.test import SimpleTestCase
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.core.urlresolvers import reverse
+
+from verba_settings import config
 
 from auth import SESSION_KEY, BACKEND_SESSION_KEY, \
     AUTH_TOKEN_SESSION_KEY, USER_DATA_SESSION_KEY
 
-
-class AuthenticatedTestCase(SimpleTestCase):
-    def setUp(self):
-        super(AuthenticatedTestCase, self).setUp()
-
-        # next is a 404 so that it doesn't trigger any other external call
-        self.callback_url = '{}?code={}&redirect_url={}'.format(
-            reverse('auth:callback'),
-            'code',
-            '/test-login-success/'
-        )
-
-    @responses.activate
-    def login(self, token="123456789", user_data={'id': 1}):
-        responses.add(
-            responses.POST, 'https://github.com/login/oauth/access_token',
-            body=json.dumps({"access_token": token}), status=200,
-            content_type='application/json'
-        )
-        responses.add(
-            responses.GET, 'https://api.github.com/user',
-            body=json.dumps(user_data), status=200,
-            content_type='application/json'
-        )
-
-        response = self.client.get(self.callback_url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            self.client.session[SESSION_KEY], user_data['id']
-        )
+from .test_base import AuthTestCase
 
 
-class LoginViewTestCase(AuthenticatedTestCase):
+class LoginViewTestCase(AuthTestCase):
     def test_success(self):
         token = "123456789"
-        user_data = {'id': 1}
+        user_data = self.get_user_data()
         self.login(token, user_data=user_data)
 
         self.assertEqual(
-            self.client.session[SESSION_KEY], user_data['id']
+            self.client.session[SESSION_KEY], user_data['login']
         )
         self.assertEqual(
             self.client.session[BACKEND_SESSION_KEY],
@@ -57,8 +29,8 @@ class LoginViewTestCase(AuthenticatedTestCase):
         self.assertEqual(
             self.client.session[AUTH_TOKEN_SESSION_KEY], token
         )
-        self.assertDictEqual(
-            self.client.session[USER_DATA_SESSION_KEY], user_data
+        self.assertEqual(
+            self.client.session[USER_DATA_SESSION_KEY]['name'], user_data['name']
         )
 
     @responses.activate
@@ -69,7 +41,7 @@ class LoginViewTestCase(AuthenticatedTestCase):
             'error_description': 'The code passed is incorrect or expired.'
         }
         responses.add(
-            responses.POST, 'https://github.com/login/oauth/access_token',
+            responses.POST, '{}/login/oauth/access_token'.format(config.GITHUB_HTTP_HOST),
             body=json.dumps(response_body), status=200,
             content_type='application/json'
         )
@@ -77,7 +49,7 @@ class LoginViewTestCase(AuthenticatedTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class LogoutViewTestCase(AuthenticatedTestCase):
+class LogoutViewTestCase(AuthTestCase):
     def setUp(self):
         super(LogoutViewTestCase, self).setUp()
 

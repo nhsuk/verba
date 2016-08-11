@@ -1,0 +1,45 @@
+{
+    "commit": {
+        "message": "some message",
+        "html_url": "https://github.com/test-owner/test-repo/commit/ad2367e783cf6ae1b0c57e4a2d37135799176825",
+        "parents": [
+            {
+                "html_url": "https://github.com/test-owner/test-repo/commit/7090d047476e796c445be4b370893e20df5b06f3",
+                "url": "https://api.github.com/repos/test-owner/test-repo/git/commits/7090d047476e796c445be4b370893e20df5b06f3",
+                "sha": "7090d047476e796c445be4b370893e20df5b06f3"
+            }
+        ],
+        "author": {
+            "date": "2016-08-09T14:57:24Z",
+            "email": "info@test-owner.com",
+            "name": "John Doe"
+        },
+        "sha": "ad2367e783cf6ae1b0c57e4a2d37135799176825",
+        "tree": {
+            "url": "https://api.github.com/repos/test-owner/test-repo/git/trees/74b06ccc1ac4eebb7be260c17794ae7287c8bcd2",
+            "sha": "74b06ccc1ac4eebb7be260c17794ae7287c8bcd2"
+        },
+        "url": "https://api.github.com/repos/test-owner/test-repo/git/commits/ad2367e783cf6ae1b0c57e4a2d37135799176825",
+        "committer": {
+            "date": "2016-08-09T14:57:24Z",
+            "email": "info@test-owner.com",
+            "name": "John Doe"
+        }
+    },
+    "content": {
+        "type": "file",
+        "size": 12,
+        "path": "pages/index.md",
+        "git_url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/f0eec86f614944a81f87d879ebdc9a79aea0d7ea",
+        "html_url": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.md",
+        "name": "index.md",
+        "download_url": "https://raw.githubusercontent.com/test-owner/test-repo/test-branch/pages/index.md",
+        "url": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.md?ref=test-branch",
+        "_links": {
+            "self": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.md?ref=test-branch",
+            "git": "https://api.github.com/repos/test-owner/test-repo/git/blobs/f0eec86f614944a81f87d879ebdc9a79aea0d7ea",
+            "html": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.md"
+        },
+        "sha": "f0eec86f614944a81f87d879ebdc9a79aea0d7ea"
+    }
+}

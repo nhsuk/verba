@@ -7,10 +7,11 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, FormView
 
+from verba_settings import config
+
 from .models import RevisionManager
 from .exceptions import RevisionNotFoundException
 from .forms import ContentForm, NewRevisionForm, SendForApprovalForm, DeleteRevisionForm
-from .settings import config
 
 
 class RevisionMixin(object):

@@ -3,9 +3,10 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.crypto import get_random_string
 
+from verba_settings import config
+import github
+
 from .exceptions import RevisionNotFoundException, RevisionFileNotFoundException
-from .settings import config
-from . import github
 
 
 def get_verba_branch_name(revision_id):
@@ -70,16 +71,17 @@ class Revision(object):
         return self._pull.description
 
     def get_files(self):
-        git_files = self._pull.branch.get_dir_files(config.PATHS.CONTENT_FOLDER)
+        if not hasattr(self, '_files'):
+            git_files = self._pull.branch.get_dir_files(config.PATHS.CONTENT_FOLDER)
 
-        files = []
-        for git_file in git_files:
-            if is_content_file(git_file.path):
-                files.append(
-                    RevisionFile(git_file, self.id)
-                )
+            self._files = []
+            for git_file in git_files:
+                if is_content_file(git_file.path):
+                    self._files.append(
+                        RevisionFile(git_file, self.id)
+                    )
 
-        return files
+        return self._files
 
     def get_file_by_path(self, path):
         for rev_file in self.get_files():
@@ -113,7 +115,7 @@ class Revision(object):
 
     def send_for_approval(self, title, description):
         self.mark_as_in_review()
-        self._pull.add_assignees(config.REVIEW_GITHUB_USERS.split(','))
+        self._pull.assignees = config.REVIEW_GITHUB_USERS.split(',')
         self._pull.edit(title=title, description=description)
 
     def delete(self):
@@ -132,7 +134,7 @@ class Revision(object):
 
 class RevisionManager(object):
     def __init__(self, token):
-        self._repo = github.get_repo(token)
+        self._repo = github.Repo(token)
 
     def get_all(self):
         revisions = []

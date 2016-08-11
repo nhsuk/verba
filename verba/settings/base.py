@@ -117,6 +117,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
 VERBA_CONFIG = {
+    'GITHUB_HTTP_HOST': 'https://github.com',
+    'GITHUB_API_HOST': 'https://api.github.com',
     'REPO': None,  # GitHub repo with content files to edit in format '<org>/<repo>'
     'GITHUB_AUTH': {
         'CLIENT_ID': None,

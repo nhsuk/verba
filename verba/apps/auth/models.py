@@ -18,7 +18,15 @@ class VerbaUser(object):
 
     @property
     def name(self):
-        return self.user_data.get('name')
+        return self.user_data['name']
+
+    @property
+    def email(self):
+        return self.user_data['email']
+
+    @property
+    def avatar_url(self):
+        return self.user_data['avatar_url']
 
     def save(self, *args, **kwargs):
         pass

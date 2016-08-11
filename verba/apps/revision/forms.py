@@ -1,6 +1,6 @@
 from django import forms
 
-from .settings import config
+from verba_settings import config
 
 
 class BaseForm(forms.Form):

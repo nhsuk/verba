@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.functional import SimpleLazyObject
 
 
 class DotDict(dict):
@@ -11,4 +12,4 @@ class DotDict(dict):
     __delattr__ = dict.__delitem__
 
 
-config = DotDict(settings.VERBA_CONFIG)
+config = SimpleLazyObject(lambda: DotDict(settings.VERBA_CONFIG))
