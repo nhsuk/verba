@@ -124,23 +124,11 @@ VERBA_CONFIG = {
         'CLIENT_ID': None,
         'CLIENT_SECRET': None,
     },
-    'PATHS': {
-        'CONTENT_FOLDER': 'pages/',  # path to folder containing the content files
-        'REVISIONS_LOG_FOLDER': 'content-revision-logs/',  # path to folder that will include revision files
-    },
     'BRANCHES': {
-        'NAMESPACE': 'content-',  # prefix of the branches that will be created
-        'BASE': 'develop',  # base branch for PRs
+        'NAMESPACE': 'content-'  # prefix of the branches that will be created
     },
     'LABELS': {
-        'IN_PROGRESS': 'do not merge',  # label to apply for newly created PRs
-        'IN_REVIEW': 'for review',  # label to apply for PRs ready for review
-    },
-    'MAX_REVISIONS': 3,  # max number of revisions allowed
-    'REVIEW_GITHUB_USERS': [],  # PR will be assigned to these github usernames when sending a review for approval
-    'PREVIEW': {
-        'TIMEOUT': 120,  # in secs
-        'URL_GENERATOR': lambda rev: None  # lambda generator or the preview url
+        'ALLOWED': []
     }
 }
 

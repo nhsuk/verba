@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Revisions{% endblock %}
+{% block actions %}
+
+{% endblock %}
+
+{% block content %}
+  {% if revisions %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Assigned to</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    {% for revision in revisions %}
+      <tr>
+        <td>{{ revision.title }}</td>
+        <td>{{ revision.statuses|join:", " }}</td>
+        <td></td>
+      </tr>
+    {% endfor %}
+
+    </tbody>
+  </table>
+  {% else %}
+    <div>No revisions exist.</div>
+  {% endif %}
+{% endblock content %}
