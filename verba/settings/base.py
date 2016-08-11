@@ -115,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-VERBA_GITHUB_TOKEN = None  # GitHub token for access to API
 VERBA_CONFIG = {
     'GITHUB_HTTP_HOST': 'https://github.com',
     'GITHUB_API_HOST': 'https://api.github.com',
@@ -128,7 +127,10 @@ VERBA_CONFIG = {
         'NAMESPACE': 'content-'  # prefix of the branches that will be created
     },
     'LABELS': {
-        'ALLOWED': []
+        'ALLOWED': ['draft', '2i', 'queued']  # all labels used by Verba, not the ones used for other purposes
+    },
+    'ASSIGNEES': {
+        'ALLOWED': ['marcofucci']  # all github users allowed by this Verba instance
     }
 }
 

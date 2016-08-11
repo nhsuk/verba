@@ -1,4 +1,4 @@
-import github
+from github import Repo
 
 from verba_settings import config
 
@@ -22,14 +22,27 @@ class Revision(object):
 
     @property
     def statuses(self):
-        return self._pull.labels
+        return filter(
+            lambda label: label in config.LABELS.ALLOWED,
+            self._pull.labels
+        )
+
+    @property
+    def assignees(self):
+        return filter(
+            lambda assignee: assignee in config.ASSIGNEES.ALLOWED,
+            self._pull.assignees
+        )
 
 
 class RevisionManager(object):
     def __init__(self, token):
-        self._repo = github.Repo(token)
+        self._repo = Repo(token)
 
     def get_all(self):
+        """
+        Returns only verba revisions.
+        """
         revisions = []
         for pull in self._repo.get_pulls():
             if not is_verba_branch(pull.head_ref):

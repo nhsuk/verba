@@ -2,6 +2,7 @@ import json
 import responses
 
 from django.test import SimpleTestCase
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.core.urlresolvers import reverse
 
 from verba_settings import config
@@ -50,4 +51,12 @@ class AuthTestCase(SimpleTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             self.client.session[SESSION_KEY], user_data['login']
+        )
+
+    def _test_redirects_to_login(self, url):
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response['Location'],
+            '{}?{}={}'.format(reverse('auth:login'), REDIRECT_FIELD_NAME, url)
         )

@@ -189,8 +189,10 @@ class PullRequest(object):
 
     @property
     def issue(self):
-        issue_data = RepoRequest(self.token).set_url(self._data['issue_url']).get()
-        return Issue(self.token, issue_data)
+        if not hasattr(self, '_issue'):
+            issue_data = RepoRequest(self.token).set_url(self._data['issue_url']).get()
+            self._issue = Issue(self.token, issue_data)
+        return self._issue
 
     @property
     def title(self):

@@ -21,7 +21,7 @@
       <tr>
         <td>{{ revision.title }}</td>
         <td>{{ revision.statuses|join:", " }}</td>
-        <td></td>
+        <td>{{ revision.assignees|join:", "}}</td>
       </tr>
     {% endfor %}
 
