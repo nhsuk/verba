@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}New Revision{% endblock %}
+
+{% block content %}
+<div class="bd-callout">
+  Give the revision a short title so that you can identify it easily.
+</div>
+
+<form action="" method="post">
+  {% include "revision/include/form.html" %}
+
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{% endblock content %}
