@@ -25,3 +25,34 @@ class RevisionListTestCase(AuthTestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.context['revisions'], revisions)
+
+
+class NewRevisionTestCase(AuthTestCase):
+    def setUp(self):
+        super(NewRevisionTestCase, self).setUp()
+        self.url = reverse('revision:new')
+
+    def test_redirects_to_login(self):
+        self._test_redirects_to_login(self.url)
+
+    @mock.patch('revision.views.RevisionManager')
+    def test_invalid_title(self, MockedRevisionManager):  # noqa
+        self.login()
+
+        response = self.client.post(self.url, data={
+            'title': ''
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'].errors)
+
+    @mock.patch('revision.views.RevisionManager')
+    def test_success(self, MockedRevisionManager):  # noqa
+        self.login()
+
+        title = 'test title'
+        response = self.client.post(self.url, data={'title': title})
+        self.assertEqual(response.status_code, 302)
+
+        MockedRevisionManager().create_assert_called_with(
+            title, self.get_user_data()['login']
+        )

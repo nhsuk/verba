@@ -123,15 +123,22 @@ VERBA_CONFIG = {
         'CLIENT_ID': None,
         'CLIENT_SECRET': None,
     },
+    'PATHS': {
+        'REVISIONS_LOG_FOLDER': 'content-revision-logs/',  # path to folder that will contain revision files
+    },
     'BRANCHES': {
-        'NAMESPACE': 'content-'  # prefix of the branches that will be created
+        'NAMESPACE': 'content',  # prefix of the branches that will be created
+        'BASE': 'develop',  # base branch for PRs
     },
     'LABELS': {
-        'ALLOWED': ['draft', '2i', 'queued']  # all labels used by Verba, not the ones used for other purposes
+        'ALLOWED': ['draft', '2i', 'queued'],  # all labels used by Verba, not the ones used for other purposes
+        'DRAFT': 'draft',
+        '2I': '2i',
+        'QUEUED': 'queued'
     },
     'ASSIGNEES': {
         'ALLOWED': ['marcofucci']  # all github users allowed by this Verba instance
-    }
+    },
 }
 
 AUTH_USER_MODEL = 'auth.models.VerbaUser'
