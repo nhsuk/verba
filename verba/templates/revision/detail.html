@@ -4,6 +4,10 @@
 {% block actions %}{% endblock %}
 
 {% block content %}
+<div class="m-b-3">
+  <span class="tag tag-info">{{ revision.statuses|join:", " }}</span> assigned to <i>{{ revision.assignees|join:", " }}</i>
+</div>
+
 <ul class="nav nav-tabs m-b-3">
   <li class="nav-item">
     <a class="nav-link{% if page_type == 'editor' %} comments{% endif %}" href="#">Comments</a>
