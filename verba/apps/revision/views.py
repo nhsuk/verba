@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from django.views.generic import TemplateView, FormView
 from django.http import Http404
 from django.contrib import messages
@@ -58,6 +59,15 @@ class BaseRevisionDetail(RevisionDetailMixin, TemplateView):
     http_method_names = ['get']
     template_name = None
     page_type = None
+
+    def dispatch(self, *args, **kwargs):
+        # redirect to list if logged-in user doesn't have access to revision
+        revision = self.get_revision()
+        if self.request.user.pk not in revision.assignees:
+            messages.error(self.request, "You can't view the revision as it's not assigned to you.")
+            return redirect('revision:list')
+
+        return super(BaseRevisionDetail, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(BaseRevisionDetail, self).get_context_data(**kwargs)

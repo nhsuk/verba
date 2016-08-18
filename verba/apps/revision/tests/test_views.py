@@ -59,8 +59,28 @@ class NewRevisionTestCase(AuthTestCase):
         )
 
 
+class BaseRevisionDetailTestCase(AuthTestCase):
+    def get_mocked_revision(self):
+        return mock.MagicMock(
+            assignees=[
+                self.get_user_data()['login']
+            ]
+        )
+
+    def _test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        revision = mock.MagicMock(
+            assignees=['some-user']
+        )
+        MockedRevisionManager().get.return_value = revision
+
+        self.login()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+
 @mock.patch('revision.views.RevisionManager')
-class RevisionEditorTestCase(AuthTestCase):
+class RevisionEditorTestCase(BaseRevisionDetailTestCase):
     def setUp(self):
         super(RevisionEditorTestCase, self).setUp()
         self.url = reverse('revision:detail-editor', kwargs={'revision_id': 1})
@@ -68,13 +88,15 @@ class RevisionEditorTestCase(AuthTestCase):
     def test_redirects_to_login(self, MockedRevisionManager):  # noqa
         self._test_redirects_to_login(self.url)
 
+    def test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        self._test_non_assignees_not_allowed(MockedRevisionManager)
+
     def test_get_found(self, MockedRevisionManager):  # noqa
-        revision = mock.MagicMock()
+        revision = self.get_mocked_revision()
         rev_files = [
             mock.MagicMock(), mock.MagicMock()
         ]
         revision.get_files.return_value = rev_files
-
         MockedRevisionManager().get.return_value = revision
 
         self.login()
