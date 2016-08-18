@@ -2,7 +2,8 @@ from django.test import SimpleTestCase
 
 from verba_settings import config
 
-from revision.utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info
+from revision.utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info, \
+    is_content_file
 from revision.constants import BRANCH_PARTS_SEPARATOR
 
 
@@ -93,4 +94,21 @@ class GetVerbaBranchNameInfo(SimpleTestCase):
         self.assertEqual(
             get_verba_branch_name_info('random-string'),
             (None, None, None, None)
+        )
+
+
+class IsContentFileTestCase(SimpleTestCase):
+    def test_true(self):
+        self.assertTrue(
+            is_content_file('some-name.md')
+        )
+
+    def test_different_extension(self):
+        self.assertFalse(
+            is_content_file('some-name.txt')
+        )
+
+    def test_without_extension(self):
+        self.assertFalse(
+            is_content_file('some-name')
         )

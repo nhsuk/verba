@@ -19,7 +19,7 @@
 
     {% for revision in revisions %}
       <tr>
-        <td>{{ revision.title }}</td>
+        <td><a href="{{ revision.get_absolute_url }}">{{ revision.title }}</a></i></td>
         <td>{{ revision.statuses|join:", " }}</td>
         <td>{{ revision.assignees|join:", "}}</td>
       </tr>

@@ -5,7 +5,7 @@ import logging
 
 from verba_settings import config
 
-from .exceptions import InvalidResponseException
+from .exceptions import InvalidResponseException, NotFoundException
 
 
 logger = logging.getLogger('github.api')
@@ -49,6 +49,8 @@ class Request(object):
         response = verb_func(self.url, **kwargs)
 
         if not response.ok:
+            if response.status_code == 404:
+                raise NotFoundException.from_response(response)
             raise InvalidResponseException.from_response(response)
 
         return response.json()
@@ -255,6 +257,11 @@ class PullRequest(object):
             pulls.append(PullRequest(token, pull_data))
         return pulls
 
+    @classmethod
+    def get(cls, token, number):
+        pull_data = RepoRequest(token).set_url('pulls/{}'.format(number)).get()
+        return cls(token, pull_data)
+
 
 class Issue(object):
     def __init__(self, token, data):
@@ -292,6 +299,9 @@ class Repo(object):
 
     def get_pulls(self):
         return PullRequest.all(self.token)
+
+    def get_pull(self, number):
+        return PullRequest.get(self.token, number=number)
 
     def create_pull(self, title, body, base, head):
         return PullRequest.create(self.token, title, body, base, head)

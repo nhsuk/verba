@@ -2,7 +2,7 @@ import json
 import responses
 
 import github
-from github.exceptions import InvalidResponseException
+from github.exceptions import InvalidResponseException, NotFoundException
 
 from github.tests.test_base import BaseGithubTestCase
 
@@ -65,6 +65,41 @@ class GetAllPullTestCase(BasePullTestCase):
 
         self.assertEqual(pulls[1].token, self.TOKEN)
         self.assertEqual(pulls[1].title, 'test2')
+
+
+class GetPullTestCase(BasePullTestCase):
+    @responses.activate
+    def test_get(self):
+        pr_number = 1
+        responses.add(
+            responses.GET, self.data['url'],
+            body=self.get_fixture('open_pull.json'), status=200,
+            content_type='application/json'
+        )
+
+        pull = github.PullRequest.get(self.TOKEN, pr_number)
+
+        self.assertEqual(pull.token, self.TOKEN)
+        self.assertEqual(pull.title, 'test1')
+        self.assertEqual(pull.issue_nr, pr_number)
+
+    @responses.activate
+    def test_not_found(self):
+        pr_number = 1
+        responses.add(
+            responses.GET, self.data['url'],
+            body=json.dumps({
+                "documentation_url": "https://developer.github.com/v3",
+                "message": "Not Found"
+            }),
+            status=404, content_type='application/json'
+        )
+
+        self.assertRaises(
+            NotFoundException,
+            github.PullRequest.get,
+            self.TOKEN, pr_number
+        )
 
 
 class CreatePullTestCase(BasePullTestCase):

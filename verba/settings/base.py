@@ -124,6 +124,7 @@ VERBA_CONFIG = {
         'CLIENT_SECRET': None,
     },
     'PATHS': {
+        'CONTENT_FOLDER': 'pages/',  # path to folder containing the content files
         'REVISIONS_LOG_FOLDER': 'content-revision-logs/',  # path to folder that will contain revision files
     },
     'BRANCHES': {

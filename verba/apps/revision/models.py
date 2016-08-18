@@ -1,11 +1,30 @@
+from django.core.urlresolvers import reverse
 from django.utils import timezone
 
 from github import Repo
+from github.exceptions import NotFoundException as GithubNotFoundException
 
 from verba_settings import config
 
-from .utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info
+from .utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info, is_content_file
 from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG
+from .exceptions import RevisionNotFoundException
+
+
+class RevisionFile(object):
+    def __init__(self, _file, revision_id):
+        assert _file.path.startswith(config.PATHS.CONTENT_FOLDER)
+
+        self.revision_id = revision_id
+        self._file = _file
+
+    @property
+    def name(self):
+        return self._file.name
+
+    @property
+    def path(self):
+        return self._file.path[len(config.PATHS.CONTENT_FOLDER):]
 
 
 class Revision(object):
@@ -67,6 +86,25 @@ class Revision(object):
         # 3. set assignees
         self._pull.assignees = assignees
 
+    def get_files(self):
+        """
+        Returns the list of RevisionFile instances belonging to this revision.
+        """
+        if not hasattr(self, '_files'):
+            git_files = self._pull.branch.get_dir_files(config.PATHS.CONTENT_FOLDER)
+
+            self._files = []
+            for git_file in git_files:
+                if is_content_file(git_file.path):
+                    self._files.append(
+                        RevisionFile(git_file, self.id)
+                    )
+
+        return self._files
+
+    def get_absolute_url(self):
+        return reverse('revision:detail-editor', args=[self.id])
+
 
 class RevisionManager(object):
     def __init__(self, token):
@@ -85,6 +123,19 @@ class RevisionManager(object):
                 Revision(pull=pull)
             )
         return revisions
+
+    def get(self, revision_id):
+        """
+        Returns the Revision with id == `revision_id` or raises RevisionNotFoundException if it doesn't exist.
+        """
+        try:
+            pull = self._repo.get_pull(revision_id)
+            if not is_verba_branch(pull.head_ref):
+                raise GithubNotFoundException('Not found')
+        except GithubNotFoundException:
+            raise RevisionNotFoundException('Revision with id {} not found'.format(revision_id))
+
+        return Revision(pull)
 
     def create(self, title, creator):
         """

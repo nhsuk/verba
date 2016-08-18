@@ -1,9 +1,11 @@
 from django.views.generic import TemplateView, FormView
+from django.http import Http404
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
 from .forms import NewRevisionForm
+from .exceptions import RevisionNotFoundException
 
 
 class RevisionMixin(object):
@@ -12,6 +14,16 @@ class RevisionMixin(object):
         if not hasattr(self, '_revision_manager'):
             self._revision_manager = RevisionManager(self.request.user.token)
         return self._revision_manager
+
+
+class RevisionDetailMixin(RevisionMixin):
+    def get_revision(self):
+        if not hasattr(self, '_revision'):
+            try:
+                self._revision = self.revision_manager.get(self.kwargs['revision_id'])
+            except RevisionNotFoundException as e:
+                raise Http404(e)
+        return self._revision
 
 
 class RevisionList(RevisionMixin, TemplateView):
@@ -40,3 +52,20 @@ class NewRevision(RevisionMixin, FormView):
 
     def get_success_url(self):
         return reverse('revision:list')
+
+
+class BaseRevisionDetail(RevisionDetailMixin, TemplateView):
+    http_method_names = ['get']
+    template_name = None
+    page_type = None
+
+    def get_context_data(self, **kwargs):
+        context = super(BaseRevisionDetail, self).get_context_data(**kwargs)
+        context['revision'] = self.get_revision()
+        context['page_type'] = self.page_type
+        return context
+
+
+class RevisionEditor(BaseRevisionDetail):
+    template_name = 'revision/detail-editor.html'
+    page_type = 'editor'

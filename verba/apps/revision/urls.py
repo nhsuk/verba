@@ -14,4 +14,9 @@ urlpatterns = [
         login_required(views.NewRevision.as_view()),
         name='new'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/editor/$',
+        login_required(views.RevisionEditor.as_view()),
+        name='detail-editor'
+    ),
 ]
