@@ -9,9 +9,12 @@ from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG
 
 
 class Revision(object):
-    def __init__(self, pull, revision_id):
-        self.id = revision_id
+    def __init__(self, pull):
         self._pull = pull
+
+    @property
+    def id(self):
+        return self._pull.issue_nr
 
     @property
     def title(self):
@@ -37,7 +40,7 @@ class Revision(object):
 
     @property
     def creator(self):
-        _, _, creator, _ = get_verba_branch_name_info(self.id)
+        _, _, creator, _ = get_verba_branch_name_info(self._pull.head_ref)
         return creator
 
     def move_to_draft(self):
@@ -79,7 +82,7 @@ class RevisionManager(object):
                 continue
 
             revisions.append(
-                Revision(pull=pull, revision_id=pull.head_ref)
+                Revision(pull=pull)
             )
         return revisions
 
@@ -124,7 +127,7 @@ class RevisionManager(object):
             head=branch_name
         )
 
-        revision = Revision(pull, branch_name)
+        revision = Revision(pull)
         revision.move_to_draft()
 
         return revision
