@@ -1,0 +1,17 @@
+{% extends "revision/detail.html" %}
+
+{% block detail-content %}
+<div class="col-sm-3">
+  {% for rev_file in revision.get_files %}
+  <div>
+    <a href="#">{{ rev_file.path }}</a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="col-sm-9">
+  <div class="bd-callout m-t-0">
+    Please select a file you want to change from the left sidebar.
+  </div>
+</div>
+{% endblock %}

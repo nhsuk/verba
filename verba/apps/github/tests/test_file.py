@@ -10,7 +10,7 @@ from github.tests.test_base import BaseGithubTestCase
 class BaseFileTestCase(BaseGithubTestCase):
     def setUp(self):
         super(BaseFileTestCase, self).setUp()
-        self.file_name = 'index.md'
+        self.file_name = 'index.json'
         self.path = 'pages/{}'.format(self.file_name)
         self.branch_name = 'new-branch'
 
@@ -72,7 +72,7 @@ class CreateFileTestCase(BaseFileTestCase):
         self.assertRaises(
             InvalidResponseException,
             github.File.create,
-            self.TOKEN, path='pages/index.md', branch_name=self.branch_name,
+            self.TOKEN, path='pages/index.json', branch_name=self.branch_name,
             content='some content', message='some message'
         )
 

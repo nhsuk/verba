@@ -1,18 +1,18 @@
 {
     "type": "file",
-    "download_url": "https://raw.githubusercontent.com/test-owner/test-repo/test-branch/pages/index.md",
+    "download_url": "https://raw.githubusercontent.com/test-owner/test-repo/test-branch/pages/index.json",
     "content": "SW5kZXgKLS0tLS0KdGhpcyBpcyBhIHRlc3QK\n",
-    "url": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.md?ref=test-branch",
-    "html_url": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.md",
+    "url": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.json?ref=test-branch",
+    "html_url": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.json",
     "encoding": "base64",
     "size": 27,
     "git_url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/516d891c230cd456bfeffac87e72aa344eacce76",
     "_links": {
         "git": "https://api.github.com/repos/test-owner/test-repo/git/blobs/516d891c230cd456bfeffac87e72aa344eacce76",
-        "self": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.md?ref=test-branch",
-        "html": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.md"
+        "self": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.json?ref=test-branch",
+        "html": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.json"
     },
-    "name": "index.md",
-    "path": "pages/index.md",
+    "name": "index.json",
+    "path": "pages/index.json",
     "sha": "89687e38c8d76a0759ad921d79194ebfcab5e6d6"
 }

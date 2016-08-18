@@ -23,7 +23,7 @@ class AuthTestCase(SimpleTestCase):
 
     def get_user_data(self, **kwargs):
         user_data = {
-            'login': 'github-user',
+            'login': 'test-owner',
             'name': 'GitHub name',
             'email': 'example@email.com',
             'avatar_url': 'https://example.com'
