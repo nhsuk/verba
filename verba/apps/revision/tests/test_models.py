@@ -187,9 +187,9 @@ class RevisionTestCase(SimpleTestCase):
 
     def test_get_files(self):
         git_files = [
-            mock.MagicMock(path='{}test1.md'.format(config.PATHS.CONTENT_FOLDER)),
+            mock.MagicMock(path='{}test1.json'.format(config.PATHS.CONTENT_FOLDER)),
             mock.MagicMock(path='{}test2.txt'.format(config.PATHS.CONTENT_FOLDER)),
-            mock.MagicMock(path='{}test3.md'.format(config.PATHS.CONTENT_FOLDER))
+            mock.MagicMock(path='{}test3.json'.format(config.PATHS.CONTENT_FOLDER))
         ]
         self.revision._pull.branch.get_dir_files.return_value = git_files
 
@@ -197,7 +197,7 @@ class RevisionTestCase(SimpleTestCase):
         self.assertEqual(len(rev_files), 2)
         self.assertEqual(
             sorted([rev_file.path for rev_file in rev_files]),
-            ['test1.md', 'test3.md']
+            ['test1.json', 'test3.json']
         )
 
 

@@ -100,7 +100,7 @@ class GetVerbaBranchNameInfo(SimpleTestCase):
 class IsContentFileTestCase(SimpleTestCase):
     def test_true(self):
         self.assertTrue(
-            is_content_file('some-name.md')
+            is_content_file('some-name.json')
         )
 
     def test_different_extension(self):

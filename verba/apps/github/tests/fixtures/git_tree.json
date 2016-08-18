@@ -10,7 +10,7 @@
         },
         {
             "url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/e5b5baf3c87a7961d30cbba76360884db0f899c3",
-            "path": "include/callout.md",
+            "path": "include/callout.json",
             "size": 413,
             "sha": "e5b5baf3c87a7961d30cbba76360884db0f899c3",
             "type": "blob",
@@ -18,7 +18,7 @@
         },
         {
             "url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/516d891c230cd456bfeffac87e72aa344eacce76",
-            "path": "index.md",
+            "path": "index.json",
             "size": 345,
             "sha": "516d891c230cd456bfeffac87e72aa344eacce76",
             "type": "blob",
@@ -26,7 +26,7 @@
         },
         {
             "url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/a7e7a5bb6c71b5718d535a4140fb7326ea80bbc3",
-            "path": "stomach-ache.md",
+            "path": "stomach-ache.json",
             "size": 1393,
             "sha": "a7e7a5bb6c71b5718d535a4140fb7326ea80bbc3",
             "type": "blob",

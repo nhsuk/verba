@@ -47,4 +47,4 @@ def is_content_file(file_name):
     Probably to improve. At the moment it only checks if the file has an md extension.
     """
     parts = file_name.split('.')
-    return len(parts) > 1 and parts[-1].lower() == 'md'
+    return len(parts) > 1 and parts[-1].lower() == config.CONTENT_FILE_EXTENSION

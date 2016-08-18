@@ -119,6 +119,7 @@ VERBA_CONFIG = {
     'GITHUB_HTTP_HOST': 'https://github.com',
     'GITHUB_API_HOST': 'https://api.github.com',
     'REPO': None,  # GitHub repo with content files to edit in format '<org>/<repo>'
+    'CONTENT_FILE_EXTENSION': 'json',
     'GITHUB_AUTH': {
         'CLIENT_ID': None,
         'CLIENT_SECRET': None,
