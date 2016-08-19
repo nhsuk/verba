@@ -7,24 +7,24 @@ from github.exceptions import NotFoundException as GithubNotFoundException
 from verba_settings import config
 
 from .utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info, is_content_file
-from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG
+from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST
 from .exceptions import RevisionNotFoundException
 
 
 class RevisionFile(object):
     def __init__(self, _file, revision_id):
         assert _file.path.startswith(config.PATHS.CONTENT_FOLDER)
+        assert _file.path.endswith(CONTENT_FILE_MANIFEST)
 
         self.revision_id = revision_id
         self._file = _file
 
     @property
     def name(self):
-        return self._file.name
-
-    @property
-    def path(self):
-        return self._file.path[len(config.PATHS.CONTENT_FOLDER):]
+        local_path = self._file.path[len(config.PATHS.CONTENT_FOLDER):]
+        return local_path.replace(
+            '/{}'.format(CONTENT_FILE_MANIFEST), ''
+        )
 
 
 class Revision(object):

@@ -29,16 +29,16 @@
     "content": {
         "type": "file",
         "size": 12,
-        "path": "pages/index.json",
+        "path": "pages/index/manifest.json",
         "git_url": "https://api.github.com/repos/test-owner/test-repo/git/blobs/f0eec86f614944a81f87d879ebdc9a79aea0d7ea",
-        "html_url": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.json",
-        "name": "index.json",
-        "download_url": "https://raw.githubusercontent.com/test-owner/test-repo/test-branch/pages/index.json",
-        "url": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.json?ref=test-branch",
+        "html_url": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index/manifest.json",
+        "name": "manifest.json",
+        "download_url": "https://raw.githubusercontent.com/test-owner/test-repo/test-branch/pages/index/manifest.json",
+        "url": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index/manifest.json?ref=test-branch",
         "_links": {
-            "self": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index.json?ref=test-branch",
+            "self": "https://api.github.com/repos/test-owner/test-repo/contents/pages/index/manifest.json?ref=test-branch",
             "git": "https://api.github.com/repos/test-owner/test-repo/git/blobs/f0eec86f614944a81f87d879ebdc9a79aea0d7ea",
-            "html": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index.json"
+            "html": "https://github.com/test-owner/test-repo/blob/test-branch/pages/index/manifest.json"
         },
         "sha": "f0eec86f614944a81f87d879ebdc9a79aea0d7ea"
     }
