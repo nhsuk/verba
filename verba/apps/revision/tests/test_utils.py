@@ -100,7 +100,10 @@ class GetVerbaBranchNameInfo(SimpleTestCase):
 class IsContentFileTestCase(SimpleTestCase):
     def test_true(self):
         self.assertTrue(
-            is_content_file('some-path/{}'.format(CONTENT_FILE_MANIFEST.upper()))
+            is_content_file('some-file/{}'.format(CONTENT_FILE_MANIFEST.upper()))
+        )
+        self.assertTrue(
+            is_content_file('some-path/some-file/{}'.format(CONTENT_FILE_MANIFEST.upper()))
         )
 
     def test_false(self):

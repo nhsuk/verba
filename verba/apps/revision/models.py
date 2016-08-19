@@ -20,7 +20,7 @@ class RevisionFile(object):
         self._file = _file
 
     @property
-    def name(self):
+    def path(self):
         local_path = self._file.path[len(config.PATHS.CONTENT_FOLDER):]
         return local_path.replace(
             '/{}'.format(CONTENT_FILE_MANIFEST), ''

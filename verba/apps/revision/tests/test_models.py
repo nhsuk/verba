@@ -187,7 +187,7 @@ class RevisionTestCase(SimpleTestCase):
 
     def test_get_files(self):
         git_files = [
-            mock.MagicMock(path='{}test1/{}'.format(config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST)),
+            mock.MagicMock(path='{}some-path/test1/{}'.format(config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST)),
             mock.MagicMock(path='{}test2/manifest.txt'.format(config.PATHS.CONTENT_FOLDER)),
             mock.MagicMock(path='{}test3/{}'.format(config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST))
         ]
@@ -196,8 +196,8 @@ class RevisionTestCase(SimpleTestCase):
         rev_files = self.revision.get_files()
         self.assertEqual(len(rev_files), 2)
         self.assertEqual(
-            sorted([rev_file.name for rev_file in rev_files]),
-            ['test1', 'test3']
+            sorted([rev_file.path for rev_file in rev_files]),
+            ['some-path/test1', 'test3']
         )
 
 
@@ -205,14 +205,14 @@ class RevisionFileTestCase(SimpleTestCase):
     def setUp(self):
         super(RevisionFileTestCase, self).setUp()
         mocked_file = mock.MagicMock()
-        mocked_file.path = '{}test-page/{}'.format(
+        mocked_file.path = '{}some-path/test-page/{}'.format(
             config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST
         )
         self.revision_file = RevisionFile(
             _file=mocked_file, revision_id=1
         )
 
-    def test_name(self):
+    def test_path(self):
         self.assertEqual(
-            self.revision_file.name, 'test-page'
+            self.revision_file.path, 'some-path/test-page'
         )
