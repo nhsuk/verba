@@ -52,7 +52,7 @@ class NewRevision(RevisionMixin, FormView):
         return super(NewRevision, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('revision:list')
+        return reverse('revision:detail-editor', kwargs={'revision_id': self.revision.id})
 
 
 class BaseRevisionDetail(RevisionDetailMixin, TemplateView):

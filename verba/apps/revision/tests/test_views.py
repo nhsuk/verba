@@ -48,13 +48,16 @@ class NewRevisionTestCase(AuthTestCase):
         self.assertTrue(response.context['form'].errors)
 
     def test_success(self, MockedRevisionManager):  # noqa
+        mocked_manager = MockedRevisionManager()
+        mocked_manager.create.return_value = mock.MagicMock(id=1)
+
         self.login()
 
         title = 'test title'
         response = self.client.post(self.url, data={'title': title})
         self.assertEqual(response.status_code, 302)
 
-        MockedRevisionManager().create_assert_called_with(
+        mocked_manager.create.assert_called_with(
             title, self.get_user_data()['login']
         )
 
