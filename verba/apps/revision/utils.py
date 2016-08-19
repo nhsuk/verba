@@ -3,7 +3,7 @@ from django.utils.crypto import get_random_string
 
 from verba_settings import config
 
-from .constants import BRANCH_PARTS_SEPARATOR
+from .constants import BRANCH_PARTS_SEPARATOR, CONTENT_FILE_MANIFEST
 
 
 def is_verba_branch(name):
@@ -42,9 +42,9 @@ def get_verba_branch_name_info(branch_name):
     return tuple(parts)
 
 
-def is_content_file(file_name):
+def is_content_file(path):
     """
-    Probably to improve. At the moment it only checks if the file has an md extension.
+    Returns True if file_name matches the CONTENT_FILE_MANIFEST naming convention
     """
-    parts = file_name.split('.')
-    return len(parts) > 1 and parts[-1].lower() == config.CONTENT_FILE_EXTENSION
+    file_name = path.split('/')[-1]
+    return file_name and file_name.lower() == CONTENT_FILE_MANIFEST
