@@ -20,7 +20,8 @@ class BaseIssueTestCase(BaseGithubTestCase):
             'assignees': [
                 {'login': 'user1'},
                 {'login': 'user2'}
-            ]
+            ],
+            'comments_url': self.get_github_api_repo_url('issues/1/comments')
         }
         self.issue = github.Issue(self.TOKEN, self.data)
 
@@ -121,3 +122,40 @@ class IssueAssigneesTestCase(BaseIssueTestCase):
             pass
         else:
             self.assertTrue(False, 'InvalidResponseException not raised')
+
+
+class IssueCommentsTestCase(BaseIssueTestCase):
+    @responses.activate
+    def test_add_valid_comment(self):
+        responses.add(
+            responses.POST, self.data['comments_url'],
+            body=self.get_fixture('comment.json'), status=200,
+            content_type='application/json'
+        )
+
+        self.issue.add_comment('test comment')
+        self.assertEqual(len(responses.calls), 1)
+        request, response = responses.calls[0]
+        self.assertTrue(response.ok)
+
+    @responses.activate
+    def test_add_empty_comment(self):
+        responses.add(
+            responses.POST, self.data['comments_url'],
+            body=json.dumps({
+                'message': 'Validation Failed',
+                'documentation_url': 'https://developer.github.com/v3/issues/comments/#create-a-comment',
+                'errors': [{
+                    'resource': 'IssueComment',
+                    'message': 'body cannot be blank',
+                    'field': 'body',
+                    'code': 'custom'
+                }]
+            }),
+            status=422, content_type='application/json'
+        )
+
+        self.assertRaises(
+            InvalidResponseException,
+            self.issue.add_comment, ''
+        )

@@ -24,4 +24,9 @@ urlpatterns = [
         login_required(views.EditFile.as_view()),
         name='edit-file'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/send-for-2i/$',
+        login_required(views.SendFor2i.as_view()),
+        name='send-for-2i'
+    ),
 ]

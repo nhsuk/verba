@@ -65,6 +65,7 @@ class NewRevisionTestCase(AuthTestCase):
 class BaseRevisionDetailTestCase(AuthTestCase):
     def get_mocked_revision(self):
         return mock.MagicMock(
+            id=1,
             assignees=[
                 self.get_user_data()['login']
             ]
@@ -162,3 +163,30 @@ class EditFileTestCase(BaseRevisionDetailTestCase):
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         self.revision_file.save_content_items.assert_called_with(data)
+
+
+@mock.patch('revision.views.RevisionManager')
+class SendFor2iTestCase(BaseRevisionDetailTestCase):
+    def setUp(self):
+        super(SendFor2iTestCase, self).setUp()
+        self.url = reverse('revision:send-for-2i', kwargs={'revision_id': 1})
+        self.revision = self.get_mocked_revision()
+
+    def test_redirects_to_login(self, MockedRevisionManager):  # noqa
+        self._test_redirects_to_login(self.url)
+
+    def test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        self._test_non_assignees_not_allowed(MockedRevisionManager)
+
+    def test_success(self, MockedRevisionManager):  # noqa
+        MockedRevisionManager().get.return_value = self.revision
+
+        self.login()
+
+        data = {
+            'comment': 'test comment'
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 302)
+        self.revision.add_comment.assert_called_with('test comment')
+        self.revision.move_to_2i.assert_any_call()

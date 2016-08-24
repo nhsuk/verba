@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
-from .forms import NewRevisionForm, ContentForm
+from .forms import NewRevisionForm, ContentForm, SendFor2iForm
 from .exceptions import RevisionNotFoundException
 
 
@@ -114,3 +114,21 @@ class EditFile(BaseRevisionDetailMixin, FormMixin, ProcessFormView):
 
     def get_success_url(self):
         return self.get_revision_file().get_absolute_url()
+
+
+class SendFor2i(BaseRevisionDetailMixin, FormMixin, ProcessFormView):
+    form_class = SendFor2iForm
+    template_name = 'revision/send-for-2i.html'
+
+    def get_form_kwargs(self):
+        kwargs = super(SendFor2i, self).get_form_kwargs()
+        kwargs['revision'] = self.get_revision()
+        return kwargs
+
+    def form_valid(self, form):
+        new_assignee = form.save()
+        messages.success(self.request, 'Revision sent for 2i and assigned to {}'.format(new_assignee))
+        return super(SendFor2i, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('revision:list')

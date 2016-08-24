@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test.testcases import SimpleTestCase
 
-from revision.forms import NewRevisionForm, ContentForm
+from revision.forms import NewRevisionForm, ContentForm, SendFor2iForm
 from revision.constants import BRANCH_PARTS_SEPARATOR
 
 
@@ -97,3 +97,51 @@ class ContentFormTestCase(SimpleTestCase):
 
         form.save()
         self.revision_file.save_content_items.assert_called_with(form.cleaned_data)
+
+
+class SendFor2iFormTestCase(SimpleTestCase):
+    def setUp(self):
+        super(SendFor2iFormTestCase, self).setUp()
+        self.revision = mock.MagicMock()
+
+    def test_valid_with_comment(self):
+        form = SendFor2iForm(
+            revision=self.revision,
+            data={
+                'comment': 'test comment'
+            }
+        )
+
+        self.assertTrue(form.is_valid())
+
+        form.save()
+
+        self.revision.add_comment.assert_called_with('test comment')
+        self.revision.move_to_2i.assert_any_call()
+
+    def test_valid_without_comment(self):
+        form = SendFor2iForm(
+            revision=self.revision,
+            data={
+                'comment': ''
+            }
+        )
+
+        self.assertTrue(form.is_valid())
+
+        form.save()
+
+        self.assertEqual(self.revision.add_comment.call_count, 0)
+        self.revision.move_to_2i.assert_any_call()
+
+    def test_not_in_draft(self):
+        self.revision.is_in_draft.return_value = False
+
+        form = SendFor2iForm(
+            revision=self.revision,
+            data={
+                'comment': 'test comment'
+            }
+        )
+
+        self.assertFalse(form.is_valid())

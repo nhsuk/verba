@@ -245,6 +245,9 @@ class PullRequest(object):
     def assignees(self, assignees):
         self.issue.assignees = assignees
 
+    def add_comment(self, comment):
+        self.issue.add_comment(comment)
+
     @classmethod
     def create(cls, token, title, body, base, head):
         data = {
@@ -297,6 +300,12 @@ class Issue(object):
         }
         pull_data = RepoRequest(self.token).set_url(self._data['url']).patch(data)
         self._data = pull_data
+
+    def add_comment(self, comment):
+        data = {
+            'body': comment
+        }
+        RepoRequest(self.token).set_url(self._data['comments_url']).post(data)
 
 
 class Repo(object):

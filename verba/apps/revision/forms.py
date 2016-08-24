@@ -71,3 +71,34 @@ class ContentForm(forms.Form):
 
     def save(self):
         self.revision_file.save_content_items(self.cleaned_data)
+
+
+class SendFor2iForm(forms.Form):
+    comment = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 10, 'cols': 50})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.revision = kwargs.pop('revision')
+
+        super(SendFor2iForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super(SendFor2iForm, self).clean()
+        if self._errors:  # skip if there are already some errors
+            return cleaned_data
+
+        if not self.revision.is_in_draft():
+            raise forms.ValidationError(
+                "This revision is not in draft so it can't be submitted for 2i"
+            )
+
+        return cleaned_data
+
+    def save(self):
+        comment = self.cleaned_data.get('comment')
+        if comment:
+            self.revision.add_comment(comment)
+
+        return self.revision.move_to_2i()

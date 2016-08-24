@@ -1,13 +1,25 @@
 {% extends 'base.html' %}
 
 {% block title %}<strong>{{ revision.title }}</strong>{% endblock %}
-{% block actions %}{% endblock %}
+{% block actions %}
+<div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Actions
+  </button>
+  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
+    {% if revision.is_in_draft %}
+    <a class="dropdown-item" href="{{ revision.get_send_to_2i_url }}">Submit for 2i</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="m-b-3">
   <span class="tag tag-info">{{ revision.statuses|join:", " }}</span> assigned to <i>{{ revision.assignees|join:", " }}</i>
 </div>
 
+{% block detail-nav %}
 <ul class="nav nav-tabs m-b-3">
   <li class="nav-item">
     <a class="nav-link{% if page_type == 'editor' %} comments{% endif %}" href="#">Comments</a>
@@ -19,6 +31,7 @@
     <a class="nav-link{% if page_type == 'editor' %} changes{% endif %}" href="#">Changes</a>
   </li>
 </ul>
+{% endblock %}
 
 <div class="row">
   {% block detail-content %}{% endblock %}

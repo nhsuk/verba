@@ -154,6 +154,28 @@ class RevisionTestCase(SimpleTestCase):
             sorted(config.LABELS.ALLOWED)
         )
 
+    def test_is_in_draft_false(self):
+        # no labels
+        self.revision._pull.labels = []
+        self.assertFalse(
+            self.revision.is_in_draft()
+        )
+
+        # all labels except the DRAFT one
+        labels = list(config.LABELS.ALLOWED)
+        labels.remove(config.LABELS.DRAFT)
+        self.revision._pull.labels = labels
+        self.assertFalse(
+            self.revision.is_in_draft()
+        )
+
+    def test_is_in_draft_true(self):
+        # labels
+        self.revision._pull.labels = config.LABELS.ALLOWED + ['another-label']
+        self.assertTrue(
+            self.revision.is_in_draft()
+        )
+
     def test_assignees(self):
         self.assertEqual(
             sorted(self.revision.assignees),
@@ -186,6 +208,31 @@ class RevisionTestCase(SimpleTestCase):
             sorted(self.revision._pull.assignees),
             sorted(['another-user', 'test-owner'])
         )
+
+    def test_move_to_2i(self):
+        self.revision.move_to_2i()
+
+        self.assertEqual(
+            self.revision.statuses,
+            [config.LABELS['2I']]
+        )
+        self.assertEqual(
+            sorted(self.revision._pull.labels),
+            sorted(['another-label', config.LABELS['2I']])
+        )
+
+        self.assertEqual(
+            self.revision.assignees,
+            ['test-owner-2']
+        )
+        self.assertEqual(
+            sorted(self.revision._pull.assignees),
+            sorted(['another-user', 'test-owner-2'])
+        )
+
+    def test_add_comment(self):
+        self.revision.add_comment('test comment')
+        self.assertEqual(self.revision._pull.add_comment.call_count, 1)
 
     def test_get_files(self):
         git_files = [

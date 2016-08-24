@@ -1,3 +1,4 @@
+import random
 import json
 
 from django.core.urlresolvers import reverse
@@ -101,6 +102,9 @@ class RevisionFile(object):
     def get_absolute_url(self):
         return reverse('revision:edit-file', args=[self.revision.id, self.path])
 
+    def get_send_to_2i_url(self):
+        return reverse('revision:send-for-2i', args=[self.revision.id])
+
 
 class Revision(object):
     def __init__(self, pull):
@@ -137,6 +141,26 @@ class Revision(object):
         _, _, creator, _ = get_verba_branch_name_info(self._pull.head_ref)
         return creator
 
+    def is_in_draft(self):
+        return config.LABELS.DRAFT in self.statuses
+
+    def _move_state(self, new_state, new_assignee):
+        # labels
+        # 1. don't lose any unknown labels
+        labels = [label for label in self._pull.labels if label not in config.LABELS.ALLOWED]
+        # 2. add only the `new_state` one
+        labels.append(new_state)
+        # 3. set labels
+        self._pull.labels = labels
+
+        # assignees
+        # 1. don't lose any unknown assignees
+        assignees = [assignee for assignee in self._pull.assignees if assignee not in config.ASSIGNEES.ALLOWED]
+        # 2. add only the `new_assignee`
+        assignees.append(new_assignee)
+        # 3. set assignees
+        self._pull.assignees = assignees
+
     def move_to_draft(self):
         """
         Moves the revision to the draft state, meaning:
@@ -145,21 +169,36 @@ class Revision(object):
 
         This without losing any of the settings that verba does not understand.
         """
-        # labels
-        # 1. don't lose any unknown labels
-        labels = [label for label in self._pull.labels if label not in config.LABELS.ALLOWED]
-        # 2. add only the draft one
-        labels.append(config.LABELS.DRAFT)
-        # 3. set labels
-        self._pull.labels = labels
+        self._move_state(
+            new_state=config.LABELS.DRAFT,
+            new_assignee=self.creator
+        )
 
-        # assignees
-        # 1. don't lose any unknown assignees
-        assignees = [assignee for assignee in self._pull.assignees if assignee not in config.ASSIGNEES.ALLOWED]
-        # 2. add only the creator
-        assignees.append(self.creator)
-        # 3. set assignees
-        self._pull.assignees = assignees
+    def add_comment(self, comment):
+        assert comment
+        self._pull.add_comment(comment)
+
+    def move_to_2i(self):
+        """
+        Moves the revision to the 2i state, meaning:
+        - sets the status to 2i
+        - sets the assignee to a new random writer
+
+        This without losing any of the settings that verba does not understand.
+        """
+        # get a random writer
+        assignee_list = list(config.ASSIGNEES.ALLOWED)
+        assignee_list.remove(self.creator)
+        new_assignee = random.choice(assignee_list)
+
+        assert new_assignee, "At least 2 writers required"
+
+        self._move_state(
+            new_state=config.LABELS['2I'],
+            new_assignee=new_assignee
+        )
+
+        return new_assignee
 
     def get_files(self):
         """
