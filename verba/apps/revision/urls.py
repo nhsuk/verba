@@ -16,7 +16,12 @@ urlpatterns = [
     ),
     url(
         r'^(?P<revision_id>\d+)/editor/$',
-        login_required(views.RevisionEditor.as_view()),
-        name='detail-editor'
+        login_required(views.Editor.as_view()),
+        name='editor'
+    ),
+    url(
+        r'^(?P<revision_id>\d+)/editor/(?P<file_path>.+)/$',
+        login_required(views.EditFile.as_view()),
+        name='edit-file'
     ),
 ]

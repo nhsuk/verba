@@ -3,15 +3,7 @@ from django import forms
 from .constants import BRANCH_PARTS_SEPARATOR
 
 
-class BaseForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super(BaseForm, self).__init__(*args, **kwargs)
-
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
-
-
-class NewRevisionForm(BaseForm):
+class NewRevisionForm(forms.Form):
     title = forms.CharField(max_length=30)
 
     def __init__(self, *args, **kwargs):
@@ -30,3 +22,52 @@ class NewRevisionForm(BaseForm):
     def save(self, creator):
         title = self.cleaned_data['title']
         return self.revision_manager.create(title, creator)
+
+
+class ContentForm(forms.Form):
+    KNOWN_FIELDS_METADATA = {
+        'title': {
+            'ordering': '1',
+            'type': {
+                'field': forms.CharField,
+                'kwargs': {}
+            }
+        }
+    }
+
+    @classmethod
+    def get_field_metadata(cls, field_name):
+        field_metadata = cls.KNOWN_FIELDS_METADATA.get(field_name)
+        if not field_metadata:
+            field_metadata = {
+                'ordering': field_name,
+                'type': {
+                    'field': forms.CharField,
+                    'kwargs': {
+                        'widget': forms.Textarea(attrs={'rows': 10, 'cols': 110})
+                    }
+                }
+            }
+        return field_metadata
+
+    def __init__(self, *args, **kwargs):
+        self.revision_file = kwargs.pop('revision_file')
+
+        super(ContentForm, self).__init__(*args, **kwargs)
+
+        fields_data = []
+        for field_name, field_value in self.revision_file.get_content_items().items():
+            field_metadata = self.get_field_metadata(field_name)
+            fields_data.append(
+                (field_name, field_value, field_metadata)
+            )
+
+        fields_data = sorted(fields_data, key=lambda x: x[2]['ordering'])
+
+        for name, value, metadata in fields_data:
+            kwargs = metadata['type'].get('kwargs', {})
+            kwargs['initial'] = value
+            self.fields[name] = metadata['type']['field'](**kwargs)
+
+    def save(self):
+        self.revision_file.save_content_items(self.cleaned_data)

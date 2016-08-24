@@ -83,10 +83,10 @@ class BaseRevisionDetailTestCase(AuthTestCase):
 
 
 @mock.patch('revision.views.RevisionManager')
-class RevisionEditorTestCase(BaseRevisionDetailTestCase):
+class EditorTestCase(BaseRevisionDetailTestCase):
     def setUp(self):
-        super(RevisionEditorTestCase, self).setUp()
-        self.url = reverse('revision:detail-editor', kwargs={'revision_id': 1})
+        super(EditorTestCase, self).setUp()
+        self.url = reverse('revision:editor', kwargs={'revision_id': 1})
 
     def test_redirects_to_login(self, MockedRevisionManager):  # noqa
         self._test_redirects_to_login(self.url)
@@ -116,3 +116,49 @@ class RevisionEditorTestCase(BaseRevisionDetailTestCase):
 
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 404)
+
+
+@mock.patch('revision.views.RevisionManager')
+class EditFileTestCase(BaseRevisionDetailTestCase):
+    def setUp(self):
+        super(EditFileTestCase, self).setUp()
+        self.url = reverse('revision:edit-file', kwargs={'revision_id': 1, 'file_path': 'somet-path/some-file/'})
+
+        self.revision = self.get_mocked_revision()
+        self.revision_file = mock.MagicMock()
+        self.revision_file.get_content_items.return_value = {
+            'title': 'some title',
+            'content': 'some content'
+        }
+        self.revision.get_file.return_value = self.revision_file
+
+    def test_redirects_to_login(self, MockedRevisionManager):  # noqa
+        self._test_redirects_to_login(self.url)
+
+    def test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        self._test_non_assignees_not_allowed(MockedRevisionManager)
+
+    def test_invalid_title(self, MockedRevisionManager):  # noqa
+        MockedRevisionManager().get.return_value = self.revision
+
+        self.login()
+
+        response = self.client.post(self.url, data={
+            'title': '',
+            'content': 'some content'
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'].errors)
+
+    def test_success(self, MockedRevisionManager):  # noqa
+        MockedRevisionManager().get.return_value = self.revision
+
+        self.login()
+
+        data = {
+            'title': 'new title',
+            'content': 'new content'
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 302)
+        self.revision_file.save_content_items.assert_called_with(data)

@@ -4,14 +4,21 @@
 <div class="col-sm-3">
   {% for rev_file in revision.get_files %}
   <div>
-    <a href="#">{{ rev_file.path }}</a>
+    <a href="{{ rev_file.get_absolute_url }}">{{ rev_file.path }}</a>
   </div>
   {% endfor %}
 </div>
 
 <div class="col-sm-9">
+  {% if form %}
+    <form action="" method="post">
+      {% include "revision/include/form.html" %}
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+  {% else %}
   <div class="bd-callout m-t-0">
     Please select a file you want to change from the left sidebar.
   </div>
+  {% endif %}
 </div>
 {% endblock %}

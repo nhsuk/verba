@@ -1,3 +1,5 @@
+import json
+
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
@@ -7,24 +9,97 @@ from github.exceptions import NotFoundException as GithubNotFoundException
 from verba_settings import config
 
 from .utils import is_verba_branch, generate_verba_branch_name, get_verba_branch_name_info, is_content_file
-from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST
+from .constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST, \
+    CONTENT_FILE_INCLUSION_DIRECTIVE, FILE_CHANGED_COMMIT_MSG
 from .exceptions import RevisionNotFoundException
 
 
+def abs_path(path):
+    if not path.startswith(config.PATHS.CONTENT_FOLDER):
+        return '{}/{}'.format(config.PATHS.CONTENT_FOLDER, path)
+    return path
+
+
+def local_path(path):
+    if path.startswith(config.PATHS.CONTENT_FOLDER):
+        return path[len(config.PATHS.CONTENT_FOLDER):]
+    return path
+
+
 class RevisionFile(object):
-    def __init__(self, _file, revision_id):
+    def __init__(self, _file, revision):
         assert _file.path.startswith(config.PATHS.CONTENT_FOLDER)
         assert _file.path.endswith(CONTENT_FILE_MANIFEST)
 
-        self.revision_id = revision_id
+        self.revision = revision
         self._file = _file
+        self._pull = revision._pull
+
+    @property
+    def _file_folder(self):
+        return self._file.path.replace(
+            '/{}'.format(CONTENT_FILE_MANIFEST), ''
+        )
 
     @property
     def path(self):
-        local_path = self._file.path[len(config.PATHS.CONTENT_FOLDER):]
-        return local_path.replace(
-            '/{}'.format(CONTENT_FILE_MANIFEST), ''
+        return local_path(self._file_folder)
+
+    def get_content_items(self):
+        """
+        Returns a dict of items of type (key, value) where:
+            - key is the key for the content area
+            - value is the actual content
+        """
+        content = json.loads(self._file.content)
+
+        items = {}
+        file_folder = abs_path(self._file_folder)
+        for key, value in content.items():
+            # if reference to external file for content => load it
+            if value.startswith(CONTENT_FILE_INCLUSION_DIRECTIVE):
+                filename_to_include = value[len(CONTENT_FILE_INCLUSION_DIRECTIVE):]
+                filepath_to_include = '{}/{}'.format(file_folder, filename_to_include)
+
+                git_file = self._pull.branch.get_file(filepath_to_include)
+                value = git_file.content
+
+            items[key] = value
+        return items
+
+    def save_content_items(self, new_content_items):
+        """
+        Saves the dict of (key, value) items.
+        """
+        content = json.loads(self._file.content)
+
+        file_folder = abs_path(self._file_folder)
+        for key, old_value in content.items():
+            new_value = new_content_items[key]
+
+            # if reference to external file for content => update it
+            if old_value.startswith(CONTENT_FILE_INCLUSION_DIRECTIVE):
+                filename_to_include = old_value[len(CONTENT_FILE_INCLUSION_DIRECTIVE):]
+                filepath_to_include = '{}/{}'.format(file_folder, filename_to_include)
+
+                git_file = self._pull.branch.get_file(filepath_to_include)
+                git_file.change_content(
+                    new_content=new_value,
+                    message=FILE_CHANGED_COMMIT_MSG.format(
+                        path=local_path('{}/{}'.format(self.path, filename_to_include))
+                    )
+                )
+            else:
+                content[key] = new_value
+
+        # save main manifest
+        self._file.change_content(
+            json.dumps(content, indent=4),
+            message=FILE_CHANGED_COMMIT_MSG.format(path=self.path)
         )
+
+    def get_absolute_url(self):
+        return reverse('revision:edit-file', args=[self.revision.id, self.path])
 
 
 class Revision(object):
@@ -97,13 +172,21 @@ class Revision(object):
             for git_file in git_files:
                 if is_content_file(git_file.path):
                     self._files.append(
-                        RevisionFile(git_file, self.id)
+                        RevisionFile(git_file, self)
                     )
 
         return self._files
 
+    def get_file(self, path):
+        """
+        Return RevisionFile for file with path == `path`.
+        """
+        full_path = '{}{}/{}'.format(config.PATHS.CONTENT_FOLDER, path, CONTENT_FILE_MANIFEST)
+        git_file = self._pull.branch.get_file(full_path)
+        return RevisionFile(git_file, self)
+
     def get_absolute_url(self):
-        return reverse('revision:detail-editor', args=[self.id])
+        return reverse('revision:editor', args=[self.id])
 
 
 class RevisionManager(object):

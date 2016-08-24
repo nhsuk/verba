@@ -161,6 +161,12 @@ class Branch(object):
             for tree_el in tree_data['tree']
         ]
 
+    def get_file(self, path):
+        # it does not check if the file exists => it's being optimistic to avoid
+        # performance penalties.
+        # It not ideal, change
+        return File(self.token, path, self.name)
+
     @classmethod
     def create(cls, token, new_branch, from_branch):
         from_branch_data = RepoRequest(token).set_url('branches/{}'.format(from_branch)).get()

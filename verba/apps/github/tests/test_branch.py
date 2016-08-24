@@ -146,3 +146,13 @@ class GetDirFilesTestCase(BaseBranchTestCase):
             self.branch.get_dir_files,
             path=self.path
         )
+
+
+class GetFileTestCase(BaseBranchTestCase):
+    def test_get_file(self):
+        path = 'some-path'
+        git_file = self.branch.get_file(path)
+
+        self.assertEqual(git_file.token, self.TOKEN)
+        self.assertEqual(git_file.path, path)
+        self.assertEqual(git_file.branch_name, self.branch.name)

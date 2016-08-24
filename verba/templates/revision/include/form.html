@@ -1,4 +1,4 @@
-{% csrf_token %}
+{% load widget_tweaks %}{% csrf_token %}
 {% if form.non_field_errors %}
 <div class="text-danger">{{ form.non_field_errors|join:", "|escape }}</div>
 {% endif %}
@@ -10,6 +10,6 @@
   {% endif %}
 
   {{ field.label_tag }}
-  {{ field }}
+  {{ field|add_class:"form-control" }}
 </div>
 {% endfor %}

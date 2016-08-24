@@ -1,3 +1,4 @@
+import json
 import datetime
 from unittest import mock
 
@@ -9,7 +10,8 @@ from github.exceptions import NotFoundException
 
 from revision.models import RevisionManager, Revision, RevisionFile
 from revision.utils import generate_verba_branch_name
-from revision.constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST
+from revision.constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST, \
+    CONTENT_FILE_INCLUSION_DIRECTIVE, FILE_CHANGED_COMMIT_MSG
 from revision.exceptions import RevisionNotFoundException
 
 
@@ -200,6 +202,12 @@ class RevisionTestCase(SimpleTestCase):
             ['some-path/test1', 'test3']
         )
 
+    def test_get_file(self):
+        path = '{}some-path/test1/{}'.format(config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST)
+        rev_file = self.revision.get_file(path)
+
+        self.assertEqual(rev_file.revision, self.revision)
+
 
 class RevisionFileTestCase(SimpleTestCase):
     def setUp(self):
@@ -208,11 +216,67 @@ class RevisionFileTestCase(SimpleTestCase):
         mocked_file.path = '{}some-path/test-page/{}'.format(
             config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST
         )
+        self.pull = mock.MagicMock()
         self.revision_file = RevisionFile(
-            _file=mocked_file, revision_id=1
+            _file=mocked_file, revision=mock.MagicMock(_pull=self.pull)
         )
 
     def test_path(self):
         self.assertEqual(
             self.revision_file.path, 'some-path/test-page'
+        )
+
+    def test_get_content_items(self):
+        self.revision_file._file.content = json.dumps({
+            'area1': 'some text',
+            'area2': '{}some-content-file'.format(CONTENT_FILE_INCLUSION_DIRECTIVE)
+        })
+        self.pull.branch.get_file.return_value = mock.MagicMock(
+            content='some external file content'
+        )
+
+        content_items = self.revision_file.get_content_items()
+        self.pull.branch.get_file.assert_called_with(
+            '{}some-path/test-page/some-content-file'.format(config.PATHS.CONTENT_FOLDER)
+        )
+        self.assertDictEqual(
+            content_items, {
+                'area1': 'some text',
+                'area2': 'some external file content'
+            }
+        )
+
+    def test_save_content_items(self):
+        self.revision_file._file.content = json.dumps({
+            'area1': 'some text',
+            'area2': '{}some-content-file'.format(CONTENT_FILE_INCLUSION_DIRECTIVE)
+        })
+        external_git_file = mock.MagicMock(
+            content='some external file content'
+        )
+        self.pull.branch.get_file.return_value = external_git_file
+
+        # save
+        self.revision_file.save_content_items({
+            'area1': 'some new text for area1',
+            'area2': 'some new text for area2'
+        })
+
+        # check that external file saved with new content
+        external_git_file.change_content.assert_called_with(
+            message=FILE_CHANGED_COMMIT_MSG.format(path='some-path/test-page/some-content-file'),
+            new_content='some new text for area2'
+        )
+
+        # check that manifest file saved with right content
+        args, kwargs = self.revision_file._file.change_content.call_args
+        self.assertDictEqual(
+            json.loads(args[0]), {
+                'area1': 'some new text for area1',
+                'area2': '{}some-content-file'.format(CONTENT_FILE_INCLUSION_DIRECTIVE)
+            }
+        )
+        self.assertEqual(
+            kwargs['message'],
+            FILE_CHANGED_COMMIT_MSG.format(path='some-path/test-page'),
         )

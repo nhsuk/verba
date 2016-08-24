@@ -1,11 +1,13 @@
 from django.shortcuts import redirect
-from django.views.generic import TemplateView, FormView
+from django.views.generic.base import TemplateResponseMixin, ContextMixin
+from django.views.generic.edit import ProcessFormView, FormMixin
+from django.views.generic import View, TemplateView, FormView
 from django.http import Http404
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
-from .forms import NewRevisionForm
+from .forms import NewRevisionForm, ContentForm
 from .exceptions import RevisionNotFoundException
 
 
@@ -52,11 +54,10 @@ class NewRevision(RevisionMixin, FormView):
         return super(NewRevision, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('revision:detail-editor', kwargs={'revision_id': self.revision.id})
+        return reverse('revision:editor', kwargs={'revision_id': self.revision.id})
 
 
-class BaseRevisionDetail(RevisionDetailMixin, TemplateView):
-    http_method_names = ['get']
+class BaseRevisionDetailMixin(RevisionDetailMixin, TemplateResponseMixin, ContextMixin):
     template_name = None
     page_type = None
 
@@ -67,15 +68,49 @@ class BaseRevisionDetail(RevisionDetailMixin, TemplateView):
             messages.error(self.request, "You can't view the revision as it's not assigned to you.")
             return redirect('revision:list')
 
-        return super(BaseRevisionDetail, self).dispatch(*args, **kwargs)
+        return super(BaseRevisionDetailMixin, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(BaseRevisionDetail, self).get_context_data(**kwargs)
+        context = super(BaseRevisionDetailMixin, self).get_context_data(**kwargs)
         context['revision'] = self.get_revision()
         context['page_type'] = self.page_type
         return context
 
 
-class RevisionEditor(BaseRevisionDetail):
+class Editor(BaseRevisionDetailMixin, View):
+    http_method_names = ['get']
     template_name = 'revision/detail-editor.html'
     page_type = 'editor'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+
+class EditFile(BaseRevisionDetailMixin, FormMixin, ProcessFormView):
+    form_class = ContentForm
+    template_name = 'revision/detail-editor.html'
+    page_type = 'editor'
+
+    def get_revision_file(self):
+        if not hasattr(self, '_revision_file'):
+            revision = self.get_revision()
+            try:
+                self._revision_file = revision.get_file(self.kwargs['file_path'])
+            except RevisionNotFoundException as e:
+                raise Http404(e)
+
+        return self._revision_file
+
+    def get_form_kwargs(self):
+        kwargs = super(EditFile, self).get_form_kwargs()
+        kwargs['revision_file'] = self.get_revision_file()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, 'File changed.')
+        return super(EditFile, self).form_valid(form)
+
+    def get_success_url(self):
+        return self.get_revision_file().get_absolute_url()
