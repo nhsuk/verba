@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test.testcases import SimpleTestCase
 
-from revision.forms import NewRevisionForm, ContentForm, SendFor2iForm
+from revision.forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm
 from revision.constants import BRANCH_PARTS_SEPARATOR
 
 
@@ -99,13 +99,17 @@ class ContentFormTestCase(SimpleTestCase):
         self.revision_file.save_content_items.assert_called_with(form.cleaned_data)
 
 
-class SendFor2iFormTestCase(SimpleTestCase):
+class ChangeStateFormMixin(object):
+    form = SendFor2iForm
+    initial_state_checker = None
+    state_changer = None
+
     def setUp(self):
-        super(SendFor2iFormTestCase, self).setUp()
+        super(ChangeStateFormMixin, self).setUp()
         self.revision = mock.MagicMock()
 
     def test_valid_with_comment(self):
-        form = SendFor2iForm(
+        form = self.form(
             revision=self.revision,
             data={
                 'comment': 'test comment'
@@ -117,10 +121,10 @@ class SendFor2iFormTestCase(SimpleTestCase):
         form.save()
 
         self.revision.add_comment.assert_called_with('test comment')
-        self.revision.move_to_2i.assert_any_call()
+        getattr(self.revision, self.state_changer).assert_any_call()
 
     def test_valid_without_comment(self):
-        form = SendFor2iForm(
+        form = self.form(
             revision=self.revision,
             data={
                 'comment': ''
@@ -132,12 +136,12 @@ class SendFor2iFormTestCase(SimpleTestCase):
         form.save()
 
         self.assertEqual(self.revision.add_comment.call_count, 0)
-        self.revision.move_to_2i.assert_any_call()
+        getattr(self.revision, self.state_changer).assert_any_call()
 
-    def test_not_in_draft(self):
-        self.revision.is_in_draft.return_value = False
+    def test_not_in_right_state(self):
+        getattr(self.revision, self.initial_state_checker).return_value = False
 
-        form = SendFor2iForm(
+        form = self.form(
             revision=self.revision,
             data={
                 'comment': 'test comment'
@@ -145,3 +149,16 @@ class SendFor2iFormTestCase(SimpleTestCase):
         )
 
         self.assertFalse(form.is_valid())
+        getattr(self.revision, self.state_changer).assert_not_called()
+
+
+class SendFor2iFormTestCase(ChangeStateFormMixin, SimpleTestCase):
+    form = SendFor2iForm
+    initial_state_checker = 'is_in_draft'
+    state_changer = 'move_to_2i'
+
+
+class SendBackFormTestCase(ChangeStateFormMixin, SimpleTestCase):
+    form = SendBackForm
+    initial_state_checker = 'is_in_2i'
+    state_changer = 'move_to_draft'

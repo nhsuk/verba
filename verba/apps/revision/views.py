@@ -2,12 +2,13 @@ from django.shortcuts import redirect
 from django.views.generic.base import TemplateResponseMixin, ContextMixin
 from django.views.generic.edit import ProcessFormView, FormMixin
 from django.views.generic import View, TemplateView, FormView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import Http404
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
-from .forms import NewRevisionForm, ContentForm, SendFor2iForm
+from .forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm
 from .exceptions import RevisionNotFoundException
 
 
@@ -116,19 +117,35 @@ class EditFile(BaseRevisionDetailMixin, FormMixin, ProcessFormView):
         return self.get_revision_file().get_absolute_url()
 
 
-class SendFor2i(BaseRevisionDetailMixin, FormMixin, ProcessFormView):
-    form_class = SendFor2iForm
-    template_name = 'revision/send-for-2i.html'
+class ChangeState(BaseRevisionDetailMixin, SuccessMessageMixin, FormMixin, ProcessFormView):
+    action_name = ''
+    template_name = 'revision/change_state.html'
 
     def get_form_kwargs(self):
-        kwargs = super(SendFor2i, self).get_form_kwargs()
+        kwargs = super(ChangeState, self).get_form_kwargs()
         kwargs['revision'] = self.get_revision()
         return kwargs
 
     def form_valid(self, form):
-        new_assignee = form.save()
-        messages.success(self.request, 'Revision sent for 2i and assigned to {}'.format(new_assignee))
-        return super(SendFor2i, self).form_valid(form)
+        form.save()
+        return super(ChangeState, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('revision:list')
+
+    def get_context_data(self, **kwargs):
+        context = super(ChangeState, self).get_context_data(**kwargs)
+        context['action_name'] = self.action_name
+        return context
+
+
+class SendFor2i(ChangeState):
+    action_name = 'Submit for 2i'
+    form_class = SendFor2iForm
+    success_message = "Revision sent for 2i and assigned to '%(new_assignee)s'"
+
+
+class SendBack(ChangeState):
+    action_name = 'Send back'
+    form_class = SendBackForm
+    success_message = "Revision sent back to '%(new_assignee)s'"

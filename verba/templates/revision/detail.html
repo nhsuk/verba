@@ -10,6 +10,9 @@
     {% if revision.is_in_draft %}
     <a class="dropdown-item" href="{{ revision.get_send_to_2i_url }}">Submit for 2i</a>
     {% endif %}
+    {% if revision.is_in_2i %}
+    <a class="dropdown-item" href="{{ revision.get_send_back_url }}">Send back</a>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

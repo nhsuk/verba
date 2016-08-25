@@ -176,6 +176,28 @@ class RevisionTestCase(SimpleTestCase):
             self.revision.is_in_draft()
         )
 
+    def test_is_in_2i_false(self):
+        # no labels
+        self.revision._pull.labels = []
+        self.assertFalse(
+            self.revision.is_in_2i()
+        )
+
+        # all labels except the DRAFT one
+        labels = list(config.LABELS.ALLOWED)
+        labels.remove(config.LABELS['2I'])
+        self.revision._pull.labels = labels
+        self.assertFalse(
+            self.revision.is_in_2i()
+        )
+
+    def test_is_in_2i_true(self):
+        # labels
+        self.revision._pull.labels = config.LABELS.ALLOWED + ['another-label']
+        self.assertTrue(
+            self.revision.is_in_2i()
+        )
+
     def test_assignees(self):
         self.assertEqual(
             sorted(self.revision.assignees),

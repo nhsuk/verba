@@ -166,10 +166,13 @@ class EditFileTestCase(BaseRevisionDetailTestCase):
 
 
 @mock.patch('revision.views.RevisionManager')
-class SendFor2iTestCase(BaseRevisionDetailTestCase):
+class ChangeStateMixin(object):
+    url_reverse_name = None
+    state_changer = None
+
     def setUp(self):
-        super(SendFor2iTestCase, self).setUp()
-        self.url = reverse('revision:send-for-2i', kwargs={'revision_id': 1})
+        super(ChangeStateMixin, self).setUp()
+        self.url = reverse(self.url_reverse_name, kwargs={'revision_id': 1})
         self.revision = self.get_mocked_revision()
 
     def test_redirects_to_login(self, MockedRevisionManager):  # noqa
@@ -189,4 +192,14 @@ class SendFor2iTestCase(BaseRevisionDetailTestCase):
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         self.revision.add_comment.assert_called_with('test comment')
-        self.revision.move_to_2i.assert_any_call()
+        getattr(self.revision, self.state_changer).assert_any_call()
+
+
+class SendFor2iTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
+    url_reverse_name = 'revision:send-for-2i'
+    state_changer = 'move_to_2i'
+
+
+class SendBackTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
+    url_reverse_name = 'revision:send-back'
+    state_changer = 'move_to_draft'

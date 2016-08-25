@@ -1,13 +1,13 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Submit for 2i: <strong>{{ revision.title }}</strong>{% endblock %}
+{% block title %}{{ action_name }}: <strong>{{ revision.title }}</strong>{% endblock %}
 
 
 {% block content %}
 <div class="bd-callout bd-callout-default">
   <h4>Please note:</h4>
   <div>
-    You are about to submit this revision for 2i and assign it to a different writer.
+    You are about to {{ action_name|lower }} this revision.
   </div>
   <div>
     You can optionally add a comment and it'll appear in the "Comments" section.
@@ -17,7 +17,7 @@
 <form action="" method="post">
   {% include "revision/include/form.html" %}
 
-  <button type="submit" class="btn btn-primary">Send for 2i</button>
+  <button type="submit" class="btn btn-primary">{{ action_name }}</button>
   <a href="{{ revision.get_absolute_url }}">Cancel and go back</a>
 </form>
 {% endblock %}

@@ -73,7 +73,7 @@ class ContentForm(forms.Form):
         self.revision_file.save_content_items(self.cleaned_data)
 
 
-class SendFor2iForm(forms.Form):
+class ChangeStateForm(forms.Form):
     comment = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'rows': 10, 'cols': 50})
@@ -81,18 +81,15 @@ class SendFor2iForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.revision = kwargs.pop('revision')
-
-        super(SendFor2iForm, self).__init__(*args, **kwargs)
+        super(ChangeStateForm, self).__init__(*args, **kwargs)
 
     def clean(self):
-        cleaned_data = super(SendFor2iForm, self).clean()
+        cleaned_data = super(ChangeStateForm, self).clean()
         if self._errors:  # skip if there are already some errors
             return cleaned_data
 
-        if not self.revision.is_in_draft():
-            raise forms.ValidationError(
-                "This revision is not in draft so it can't be submitted for 2i"
-            )
+        if not self.is_in_valid_state():
+            raise forms.ValidationError("This revision is not in correct state")
 
         return cleaned_data
 
@@ -101,4 +98,27 @@ class SendFor2iForm(forms.Form):
         if comment:
             self.revision.add_comment(comment)
 
+        new_assignee = self.change_state()
+        self.cleaned_data['new_assignee'] = new_assignee
+
+    def change_state(self):
+        raise NotImplementedError()
+
+    def is_in_valid_state(self):
+        raise NotImplementedError()
+
+
+class SendFor2iForm(ChangeStateForm):
+    def change_state(self):
         return self.revision.move_to_2i()
+
+    def is_in_valid_state(self):
+        return self.revision.is_in_draft()
+
+
+class SendBackForm(ChangeStateForm):
+    def change_state(self):
+        return self.revision.move_to_draft()
+
+    def is_in_valid_state(self):
+        return self.revision.is_in_2i()

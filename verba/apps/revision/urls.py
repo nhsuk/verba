@@ -29,4 +29,9 @@ urlpatterns = [
         login_required(views.SendFor2i.as_view()),
         name='send-for-2i'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/send-back/$',
+        login_required(views.SendBack.as_view()),
+        name='send-back'
+    ),
 ]

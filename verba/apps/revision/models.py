@@ -102,9 +102,6 @@ class RevisionFile(object):
     def get_absolute_url(self):
         return reverse('revision:edit-file', args=[self.revision.id, self.path])
 
-    def get_send_to_2i_url(self):
-        return reverse('revision:send-for-2i', args=[self.revision.id])
-
 
 class Revision(object):
     def __init__(self, pull):
@@ -144,6 +141,9 @@ class Revision(object):
     def is_in_draft(self):
         return config.LABELS.DRAFT in self.statuses
 
+    def is_in_2i(self):
+        return config.LABELS['2I'] in self.statuses
+
     def _move_state(self, new_state, new_assignee):
         # labels
         # 1. don't lose any unknown labels
@@ -173,6 +173,8 @@ class Revision(object):
             new_state=config.LABELS.DRAFT,
             new_assignee=self.creator
         )
+
+        return self.creator
 
     def add_comment(self, comment):
         assert comment
@@ -226,6 +228,12 @@ class Revision(object):
 
     def get_absolute_url(self):
         return reverse('revision:editor', args=[self.id])
+
+    def get_send_to_2i_url(self):
+        return reverse('revision:send-for-2i', args=[self.id])
+
+    def get_send_back_url(self):
+        return reverse('revision:send-back', args=[self.id])
 
 
 class RevisionManager(object):
