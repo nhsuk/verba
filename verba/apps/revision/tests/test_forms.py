@@ -2,7 +2,7 @@ from unittest import mock
 
 from django.test.testcases import SimpleTestCase
 
-from revision.forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm
+from revision.forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm, PublishForm
 from revision.constants import BRANCH_PARTS_SEPARATOR
 
 
@@ -101,7 +101,6 @@ class ContentFormTestCase(SimpleTestCase):
 
 class ChangeStateFormMixin(object):
     form = SendFor2iForm
-    initial_state_checker = None
     state_changer = None
 
     def setUp(self):
@@ -138,8 +137,11 @@ class ChangeStateFormMixin(object):
         self.assertEqual(self.revision.add_comment.call_count, 0)
         getattr(self.revision, self.state_changer).assert_any_call()
 
+    def set_revision_in_wrong_state(self):
+        raise NotImplementedError()
+
     def test_not_in_right_state(self):
-        getattr(self.revision, self.initial_state_checker).return_value = False
+        self.set_revision_in_wrong_state()
 
         form = self.form(
             revision=self.revision,
@@ -154,11 +156,24 @@ class ChangeStateFormMixin(object):
 
 class SendFor2iFormTestCase(ChangeStateFormMixin, SimpleTestCase):
     form = SendFor2iForm
-    initial_state_checker = 'is_in_draft'
     state_changer = 'move_to_2i'
+
+    def set_revision_in_wrong_state(self):
+        self.revision.is_in_draft.return_value = False
 
 
 class SendBackFormTestCase(ChangeStateFormMixin, SimpleTestCase):
     form = SendBackForm
-    initial_state_checker = 'is_in_2i'
     state_changer = 'move_to_draft'
+
+    def set_revision_in_wrong_state(self):
+        self.revision.is_in_2i.return_value = False
+
+
+class PublishFormTestCase(ChangeStateFormMixin, SimpleTestCase):
+    form = PublishForm
+    state_changer = 'move_to_ready_for_publishing'
+
+    def set_revision_in_wrong_state(self):
+        self.revision.is_in_draft.return_value = False
+        self.revision.is_in_2i.return_value = False

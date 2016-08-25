@@ -34,4 +34,9 @@ urlpatterns = [
         login_required(views.SendBack.as_view()),
         name='send-back'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/publish/$',
+        login_required(views.Publish.as_view()),
+        name='publish'
+    ),
 ]

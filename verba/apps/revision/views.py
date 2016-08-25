@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
-from .forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm
+from .forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm, PublishForm
 from .exceptions import RevisionNotFoundException
 
 
@@ -149,3 +149,9 @@ class SendBack(ChangeState):
     action_name = 'Send back'
     form_class = SendBackForm
     success_message = "Revision sent back to '%(new_assignee)s'"
+
+
+class Publish(ChangeState):
+    action_name = 'Publish'
+    form_class = PublishForm
+    success_message = "Revision marked as ready for publishing."

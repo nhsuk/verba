@@ -122,3 +122,11 @@ class SendBackForm(ChangeStateForm):
 
     def is_in_valid_state(self):
         return self.revision.is_in_2i()
+
+
+class PublishForm(ChangeStateForm):
+    def change_state(self):
+        return self.revision.move_to_ready_for_publishing()
+
+    def is_in_valid_state(self):
+        return self.revision.is_in_2i() or self.revision.is_in_draft()

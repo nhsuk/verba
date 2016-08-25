@@ -6,4 +6,8 @@ VERBA_CONFIG.update({
     'GITHUB_API_HOST': 'https://api.example.com',
     'REPO': 'test-owner/test-repo'
 })
-VERBA_CONFIG['ASSIGNEES']['ALLOWED'] = ['test-owner', 'test-owner-2']
+VERBA_CONFIG['ASSIGNEES'] = {
+    'ALLOWED': ['test-owner', 'test-owner-2', 'test-developer'],
+    'WRITERS': ['test-owner', 'test-owner-2'],
+    'DEVELOPERS': ['test-developer']
+}

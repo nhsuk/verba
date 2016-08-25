@@ -13,6 +13,7 @@
     {% if revision.is_in_2i %}
     <a class="dropdown-item" href="{{ revision.get_send_back_url }}">Send back</a>
     {% endif %}
+    <a class="dropdown-item" href="{{ revision.get_publish_url }}">Publish</a>
   </div>
 </div>
 {% endblock %}

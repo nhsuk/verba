@@ -252,6 +252,27 @@ class RevisionTestCase(SimpleTestCase):
             sorted(['another-user', 'test-owner-2'])
         )
 
+    def test_move_to_ready_for_publishing(self):
+        self.revision.move_to_ready_for_publishing()
+
+        self.assertEqual(
+            self.revision.statuses,
+            [config.LABELS.READY_FOR_PUBLISHING]
+        )
+        self.assertEqual(
+            sorted(self.revision._pull.labels),
+            sorted(['another-label', config.LABELS.READY_FOR_PUBLISHING])
+        )
+
+        self.assertEqual(
+            self.revision.assignees,
+            ['test-developer']
+        )
+        self.assertEqual(
+            sorted(self.revision._pull.assignees),
+            sorted(['another-user', 'test-developer'])
+        )
+
     def test_add_comment(self):
         self.revision.add_comment('test comment')
         self.assertEqual(self.revision._pull.add_comment.call_count, 1)

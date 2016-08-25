@@ -133,13 +133,19 @@ VERBA_CONFIG = {
         'BASE': 'develop',  # base branch for PRs
     },
     'LABELS': {
-        'ALLOWED': ['draft', '2i', 'queued'],  # all labels used by Verba, not the ones used for other purposes
+        # all labels used by Verba, not the ones used for other purposes
+        'ALLOWED': ['draft', '2i', 'ready for publishing'],
+
         'DRAFT': 'draft',
         '2I': '2i',
-        'QUEUED': 'queued'
+        'READY_FOR_PUBLISHING': 'ready for publishing'
     },
     'ASSIGNEES': {
-        'ALLOWED': ['marcofucci']  # all github users allowed by this Verba instance
+        # all github users allowed by this Verba instance
+        'ALLOWED': [],
+
+        'WRITERS': [],
+        'DEVELOPERS': []
     },
 }
 

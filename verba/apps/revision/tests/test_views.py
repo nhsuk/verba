@@ -203,3 +203,8 @@ class SendFor2iTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
 class SendBackTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
     url_reverse_name = 'revision:send-back'
     state_changer = 'move_to_draft'
+
+
+class PublishTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
+    url_reverse_name = 'revision:publish'
+    state_changer = 'move_to_ready_for_publishing'

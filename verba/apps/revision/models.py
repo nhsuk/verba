@@ -144,7 +144,7 @@ class Revision(object):
     def is_in_2i(self):
         return config.LABELS['2I'] in self.statuses
 
-    def _move_state(self, new_state, new_assignee):
+    def _move_state(self, new_state, new_assignees):
         # labels
         # 1. don't lose any unknown labels
         labels = [label for label in self._pull.labels if label not in config.LABELS.ALLOWED]
@@ -156,8 +156,8 @@ class Revision(object):
         # assignees
         # 1. don't lose any unknown assignees
         assignees = [assignee for assignee in self._pull.assignees if assignee not in config.ASSIGNEES.ALLOWED]
-        # 2. add only the `new_assignee`
-        assignees.append(new_assignee)
+        # 2. add only the `new_assignees`
+        assignees += new_assignees
         # 3. set assignees
         self._pull.assignees = assignees
 
@@ -171,7 +171,7 @@ class Revision(object):
         """
         self._move_state(
             new_state=config.LABELS.DRAFT,
-            new_assignee=self.creator
+            new_assignees=[self.creator]
         )
 
         return self.creator
@@ -189,18 +189,37 @@ class Revision(object):
         This without losing any of the settings that verba does not understand.
         """
         # get a random writer
-        assignee_list = list(config.ASSIGNEES.ALLOWED)
-        assignee_list.remove(self.creator)
+        assignee_list = list(config.ASSIGNEES.WRITERS)
+        if self.creator in assignee_list:
+            assignee_list.remove(self.creator)
         new_assignee = random.choice(assignee_list)
 
         assert new_assignee, "At least 2 writers required"
 
         self._move_state(
             new_state=config.LABELS['2I'],
-            new_assignee=new_assignee
+            new_assignees=[new_assignee]
         )
 
         return new_assignee
+
+    def move_to_ready_for_publishing(self):
+        """
+        Moves the revision to the ready for publishing state, meaning:
+        - sets the status to ready for publishing
+        - sets the assignees to all the developers
+
+        This without losing any of the settings that verba does not understand.
+        """
+
+        new_assignees = config.ASSIGNEES.DEVELOPERS
+
+        self._move_state(
+            new_state=config.LABELS.READY_FOR_PUBLISHING,
+            new_assignees=new_assignees
+        )
+
+        return new_assignees
 
     def get_files(self):
         """
@@ -234,6 +253,9 @@ class Revision(object):
 
     def get_send_back_url(self):
         return reverse('revision:send-back', args=[self.id])
+
+    def get_publish_url(self):
+        return reverse('revision:publish', args=[self.id])
 
 
 class RevisionManager(object):
