@@ -236,3 +236,16 @@ class ActivitiesTestCase(BaseRevisionDetailTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['revision'], revision)
         self.assertEqual(response.context['revision'].activities, activities)
+
+    def test_add_comment(self, MockedRevisionManager):  # noqa
+        revision = self.get_mocked_revision()
+        MockedRevisionManager().get.return_value = revision
+
+        self.login()
+
+        data = {
+            'comment': 'test comment'
+        }
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, 302)
+        revision.add_comment.assert_called_with('test comment')

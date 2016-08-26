@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 
 from .models import RevisionManager
-from .forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm, PublishForm
+from .forms import NewRevisionForm, ContentForm, SendFor2iForm, SendBackForm, PublishForm, AddCommentForm
 from .exceptions import RevisionNotFoundException
 
 
@@ -159,11 +159,20 @@ class Publish(ChangeState):
     success_message = "Revision marked as ready for publishing."
 
 
-class Activities(BaseRevisionDetailMixin, View):
-    http_method_names = ['get']
+class Activities(BaseRevisionDetailMixin, SuccessMessageMixin, FormMixin, ProcessFormView):
     template_name = 'revision/activities.html'
+    form_class = AddCommentForm
+    success_message = "Comment added"
     page_type = 'activities'
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+    def get_form_kwargs(self):
+        kwargs = super(Activities, self).get_form_kwargs()
+        kwargs['revision'] = self.get_revision()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super(Activities, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('revision:activities', kwargs={'revision_id': self.get_revision().id})

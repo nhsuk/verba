@@ -73,15 +73,25 @@ class ContentForm(forms.Form):
         self.revision_file.save_content_items(self.cleaned_data)
 
 
-class ChangeStateForm(forms.Form):
+class AddCommentForm(forms.Form):
     comment = forms.CharField(
-        required=False,
         widget=forms.Textarea(attrs={'rows': 10, 'cols': 50})
     )
 
     def __init__(self, *args, **kwargs):
         self.revision = kwargs.pop('revision')
+        super(AddCommentForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        comment = self.cleaned_data.get('comment')
+        if comment:
+            self.revision.add_comment(comment)
+
+
+class ChangeStateForm(AddCommentForm):
+    def __init__(self, *args, **kwargs):
         super(ChangeStateForm, self).__init__(*args, **kwargs)
+        self.fields['comment'].required = False
 
     def clean(self):
         cleaned_data = super(ChangeStateForm, self).clean()
@@ -94,9 +104,7 @@ class ChangeStateForm(forms.Form):
         return cleaned_data
 
     def save(self):
-        comment = self.cleaned_data.get('comment')
-        if comment:
-            self.revision.add_comment(comment)
+        super(ChangeStateForm, self).save()
 
         new_assignee = self.change_state()
         self.cleaned_data['new_assignee'] = new_assignee
