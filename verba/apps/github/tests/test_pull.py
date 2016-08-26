@@ -1,6 +1,8 @@
 import json
 import responses
 
+from django.utils.dateparse import parse_datetime
+
 import github
 from github.exceptions import InvalidResponseException, NotFoundException
 
@@ -19,7 +21,9 @@ class BasePullTestCase(BaseGithubTestCase):
             'body': 'pull body',
             'head': {
                 'ref': 'pull head ref'
-            }
+            },
+            'created_at': "2016-08-05T13:15:21Z",
+            'comments': 12
         }
         self.pull = github.PullRequest(self.TOKEN, self.data)
 
@@ -30,6 +34,8 @@ class PullDataTestCase(BasePullTestCase):
         self.assertEqual(self.pull.title, self.data['title'])
         self.assertEqual(self.pull.description, self.data['body'])
         self.assertEqual(self.pull.head_ref, self.data['head']['ref'])
+        self.assertEqual(self.pull.created_at, parse_datetime(self.data['created_at']))
+        self.assertEqual(self.pull.tot_comments, self.data['comments'])
 
     def test_branch(self):
         self.assertEqual(self.pull.branch.token, self.pull.token)

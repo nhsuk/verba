@@ -3,6 +3,8 @@ import requests
 import base64
 import logging
 
+from django.utils.dateparse import parse_datetime
+
 from verba_settings import config
 
 from .exceptions import InvalidResponseException, NotFoundException
@@ -68,6 +70,24 @@ def abs_path(path):
     if path.startswith('/'):
         return path
     return '/{}'.format(path)
+
+
+class Comment(object):
+    def __init__(self, token, data):
+        self.token = token
+        self._data = data
+
+    @property
+    def body(self):
+        return self._data['body']
+
+    @property
+    def created_at(self):
+        return parse_datetime(self._data['created_at'])
+
+    @property
+    def created_by(self):
+        return self._data['user']['login']
 
 
 class File(object):
@@ -210,6 +230,10 @@ class PullRequest(object):
     def description(self):
         return self._data['body']
 
+    @property
+    def created_at(self):
+        return parse_datetime(self._data['created_at'])
+
     def edit(self, title, description):
         data = {
             'title': title,
@@ -247,6 +271,14 @@ class PullRequest(object):
 
     def add_comment(self, comment):
         self.issue.add_comment(comment)
+
+    @property
+    def comments(self):
+        return self.issue.comments
+
+    @property
+    def tot_comments(self):
+        return self._data['comments']
 
     @classmethod
     def create(cls, token, title, body, base, head):
@@ -306,6 +338,14 @@ class Issue(object):
             'body': comment
         }
         RepoRequest(self.token).set_url(self._data['comments_url']).post(data)
+
+    @property
+    def comments(self):
+        comments_data = RepoRequest(self.token).set_url(self._data['comments_url']).get()
+        return [
+            Comment(self.token, data)
+            for data in comments_data
+        ]
 
 
 class Repo(object):

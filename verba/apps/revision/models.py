@@ -27,6 +27,67 @@ def local_path(path):
     return path
 
 
+class Activity(object):
+    kind = None
+
+    @property
+    def description(self):
+        raise NotImplementedError()
+
+    @property
+    def created_at(self):
+        raise NotImplementedError()
+
+    @property
+    def created_by(self):
+        raise NotImplementedError()
+
+
+class PlainActivity(Activity):
+    kind = 'plain'
+
+    def __init__(self, description, created_at, created_by):
+        self._description = description
+        self._created_at = created_at
+        self._created_by = created_by
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def created_at(self):
+        return self._created_at
+
+    @property
+    def created_by(self):
+        return self._created_by
+
+
+class Comment(Activity):
+    kind = 'comment'
+
+    def __init__(self, git_comment):
+        super(Comment, self).__init__()
+        self._comment = git_comment
+
+    @property
+    def description(self):
+        return 'wrote'
+
+    @property
+    def body(self):
+        return self._comment.body
+
+    @property
+    def created_at(self):
+        return self._comment.created_at
+
+    @property
+    def created_by(self):
+        return self._comment.created_by
+
+
 class RevisionFile(object):
     def __init__(self, _file, revision):
         assert _file.path.startswith(config.PATHS.CONTENT_FOLDER)
@@ -245,17 +306,26 @@ class Revision(object):
         git_file = self._pull.branch.get_file(full_path)
         return RevisionFile(git_file, self)
 
+    @property
+    def tot_comments(self):
+        return self._pull.tot_comments
+
+    @property
+    def activities(self):
+        activities = [
+            PlainActivity(
+                description='created this revision',
+                created_at=self._pull.created_at,
+                created_by=self.creator
+            )
+        ]
+        activities += [
+            Comment(comment) for comment in self._pull.comments
+        ]
+        return activities
+
     def get_absolute_url(self):
-        return reverse('revision:editor', args=[self.id])
-
-    def get_send_to_2i_url(self):
-        return reverse('revision:send-for-2i', args=[self.id])
-
-    def get_send_back_url(self):
-        return reverse('revision:send-back', args=[self.id])
-
-    def get_publish_url(self):
-        return reverse('revision:publish', args=[self.id])
+        return reverse('revision:activities', args=[self.id])
 
 
 class RevisionManager(object):

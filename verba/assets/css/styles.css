@@ -33,16 +33,16 @@
 }
 
 .tag {
-    display: inline-block;
-    padding: .25em .4em;
-    font-size: 75%;
-    font-weight: 700;
-    line-height: 1;
-    color: #fff;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: baseline;
-    border-radius: .25rem;
+  display: inline-block;
+  padding: .25em .4em;
+  font-size: 75%;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: .25rem;
 }
 
 .tag-default { background-color: #818a91; }
@@ -51,3 +51,11 @@
 .tag-info { background-color: #5bc0de; }
 .tag-warning { background-color: #f0ad4e; }
 .tag-danger { background-color: #d9534f; }
+
+.card-block {
+  padding: 0.5rem 1rem;
+}
+
+.card-block p {
+  margin-bottom: 0.5rem;
+}

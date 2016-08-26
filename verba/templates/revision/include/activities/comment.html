@@ -1,0 +1,9 @@
+<div class="card-header">
+  <strong>{{ activity.created_by }}</strong> {{ activity.description }} on {{ activity.created_at|date }} at {{ activity.created_at|time }}
+</div>
+
+<div class="card-block">
+  <blockquote class="card-blockquote">
+    <p>{{ activity.body }}</p>
+  </blockquote>
+</div>

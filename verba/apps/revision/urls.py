@@ -39,4 +39,9 @@ urlpatterns = [
         login_required(views.Publish.as_view()),
         name='publish'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/activities/$',
+        login_required(views.Activities.as_view()),
+        name='activities'
+    ),
 ]

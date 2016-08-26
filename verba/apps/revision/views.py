@@ -73,7 +73,9 @@ class BaseRevisionDetailMixin(RevisionDetailMixin, TemplateResponseMixin, Contex
 
     def get_context_data(self, **kwargs):
         context = super(BaseRevisionDetailMixin, self).get_context_data(**kwargs)
-        context['revision'] = self.get_revision()
+        revision = self.get_revision()
+        context['revision'] = revision
+        context['revision_id'] = revision.id
         context['page_type'] = self.page_type
         return context
 
@@ -155,3 +157,13 @@ class Publish(ChangeState):
     action_name = 'Publish'
     form_class = PublishForm
     success_message = "Revision marked as ready for publishing."
+
+
+class Activities(BaseRevisionDetailMixin, View):
+    http_method_names = ['get']
+    template_name = 'revision/activities.html'
+    page_type = 'activities'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)

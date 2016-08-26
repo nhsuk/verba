@@ -8,7 +8,7 @@ from django.test import SimpleTestCase
 
 from github.exceptions import NotFoundException
 
-from revision.models import RevisionManager, Revision, RevisionFile
+from revision.models import RevisionManager, Revision, RevisionFile, Comment, PlainActivity
 from revision.utils import generate_verba_branch_name
 from revision.constants import REVISION_LOG_FILE_COMMIT_MSG, REVISION_BODY_MSG, CONTENT_FILE_MANIFEST, \
     CONTENT_FILE_INCLUSION_DIRECTIVE, FILE_CHANGED_COMMIT_MSG
@@ -277,6 +277,27 @@ class RevisionTestCase(SimpleTestCase):
         self.revision.add_comment('test comment')
         self.assertEqual(self.revision._pull.add_comment.call_count, 1)
 
+    def test_activities(self):
+        self.revision._pull.created_at = datetime.datetime.now()
+        self.revision._pull.comments = [
+            mock.MagicMock(body='test comment1'),
+            mock.MagicMock(body='test comment2'),
+        ]
+
+        activities = self.revision.activities
+
+        # first activity is 'created'
+        created_activity = activities[0]
+        self.assertEqual(created_activity.description, 'created this revision')
+        self.assertEqual(created_activity.created_at, self.revision._pull.created_at)
+        self.assertEqual(created_activity.created_by, 'test-owner')
+
+        # 2nd and 2rd, 'comment'
+        self.assertEqual(
+            [comment.body for comment in activities[1:]],
+            ['test comment1', 'test comment2']
+        )
+
     def test_get_files(self):
         git_files = [
             mock.MagicMock(path='{}some-path/test1/{}'.format(config.PATHS.CONTENT_FOLDER, CONTENT_FILE_MANIFEST)),
@@ -370,3 +391,32 @@ class RevisionFileTestCase(SimpleTestCase):
             kwargs['message'],
             FILE_CHANGED_COMMIT_MSG.format(path='some-path/test-page'),
         )
+
+
+class CommentTestCase(SimpleTestCase):
+    def test_data(self):
+        git_comment = mock.MagicMock(
+            body='comment body',
+            created_at=datetime.datetime.now(),
+            created_by='test-owner'
+        )
+        comment = Comment(git_comment)
+        self.assertEqual(comment.body, git_comment.body)
+        self.assertEqual(comment.created_at, git_comment.created_at)
+        self.assertEqual(comment.created_by, git_comment.created_by)
+        self.assertEqual(comment.kind, 'comment')
+        self.assertEqual(comment.description, 'wrote')
+
+
+class PlainActivityTestCase(SimpleTestCase):
+    def test_data(self):
+        data = {
+            'description': 'test description',
+            'created_at': datetime.datetime.now(),
+            'created_by': 'test-owner'
+        }
+        activity = PlainActivity(**data)
+        self.assertEqual(activity.description, data['description'])
+        self.assertEqual(activity.created_at, data['created_at'])
+        self.assertEqual(activity.created_by, data['created_by'])
+        self.assertEqual(activity.kind, 'plain')

@@ -108,7 +108,7 @@ class EditorTestCase(BaseRevisionDetailTestCase):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['revision'], revision)
-        self.assertEqual(revision.get_files(), rev_files)
+        self.assertEqual(response.context['revision'].get_files(), rev_files)
 
     def test_get_not_found(self, MockedRevisionManager):  # noqa
         MockedRevisionManager().get.side_effect = RevisionNotFoundException()
@@ -208,3 +208,31 @@ class SendBackTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
 class PublishTestCase(ChangeStateMixin, BaseRevisionDetailTestCase):
     url_reverse_name = 'revision:publish'
     state_changer = 'move_to_ready_for_publishing'
+
+
+@mock.patch('revision.views.RevisionManager')
+class ActivitiesTestCase(BaseRevisionDetailTestCase):
+    def setUp(self):
+        super(ActivitiesTestCase, self).setUp()
+        self.url = reverse('revision:activities', kwargs={'revision_id': 1})
+
+    def test_redirects_to_login(self, MockedRevisionManager):  # noqa
+        self._test_redirects_to_login(self.url)
+
+    def test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        self._test_non_assignees_not_allowed(MockedRevisionManager)
+
+    def test_list_of_activities(self, MockedRevisionManager):  # noqa
+        revision = self.get_mocked_revision()
+        activities = [
+            mock.MagicMock(), mock.MagicMock()
+        ]
+        revision.activities = activities
+        MockedRevisionManager().get.return_value = revision
+
+        self.login()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['revision'], revision)
+        self.assertEqual(response.context['revision'].activities, activities)

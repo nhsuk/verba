@@ -1,0 +1,10 @@
+{% extends "revision/detail.html" %}
+
+{% block detail-content %}
+{% for activity in revision.activities %}
+  <div class="card">
+  {% include "revision/include/activities/"|add:activity.kind|add:".html" %}
+  </div>
+{% endfor %}
+
+{% endblock %}

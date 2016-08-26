@@ -8,12 +8,12 @@
   </button>
   <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton">
     {% if revision.is_in_draft %}
-    <a class="dropdown-item" href="{{ revision.get_send_to_2i_url }}">Submit for 2i</a>
+    <a class="dropdown-item" href="{% url 'revision:send-for-2i' revision_id %}">Submit for 2i</a>
     {% endif %}
     {% if revision.is_in_2i %}
-    <a class="dropdown-item" href="{{ revision.get_send_back_url }}">Send back</a>
+    <a class="dropdown-item" href="{% url 'revision:send-back' revision_id %}">Send back</a>
     {% endif %}
-    <a class="dropdown-item" href="{{ revision.get_publish_url }}">Publish</a>
+    <a class="dropdown-item" href="{% url 'revision:publish' revision_id %}">Publish</a>
   </div>
 </div>
 {% endblock %}
@@ -26,13 +26,13 @@
 {% block detail-nav %}
 <ul class="nav nav-tabs m-b-3">
   <li class="nav-item">
-    <a class="nav-link{% if page_type == 'editor' %} comments{% endif %}" href="#">Comments</a>
+    <a class="nav-link{% if page_type == 'activities' %} active{% endif %}" href="{% url 'revision:activities' revision_id %}">Comments ({{ revision.tot_comments|default:0 }})</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link{% if page_type == 'editor' %} active{% endif %}" href="#">Editor</a>
+    <a class="nav-link{% if page_type == 'editor' %} active{% endif %}" href="{% url 'revision:editor' revision_id %}">Editor</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link{% if page_type == 'editor' %} changes{% endif %}" href="#">Changes</a>
+    <a class="nav-link{% if page_type == 'changes' %} active{% endif %}" href="#">Changes</a>
   </li>
 </ul>
 {% endblock %}

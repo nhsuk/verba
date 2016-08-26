@@ -126,6 +126,21 @@ class IssueAssigneesTestCase(BaseIssueTestCase):
 
 class IssueCommentsTestCase(BaseIssueTestCase):
     @responses.activate
+    def test_comments(self):
+        responses.add(
+            responses.GET, self.data['comments_url'],
+            body=self.get_fixture('comments.json'), status=200,
+            content_type='application/json'
+        )
+
+        comments = self.issue.comments
+        self.assertEqual(len(comments), 2)
+        self.assertEqual(
+            [comment.body for comment in comments],
+            ['test comment 1', 'test comment 2']
+        )
+
+    @responses.activate
     def test_add_valid_comment(self):
         responses.add(
             responses.POST, self.data['comments_url'],
