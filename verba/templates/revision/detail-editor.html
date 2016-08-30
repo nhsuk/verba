@@ -1,7 +1,7 @@
 {% extends "revision/detail.html" %}
 
 {% block detail-content %}
-<div class="col-sm-3">
+<div class="col-sm-4">
   {% for rev_file in revision.get_files %}
   <div>
     <a href="{{ rev_file.get_absolute_url }}">{{ rev_file.path }}</a>
@@ -9,7 +9,7 @@
   {% endfor %}
 </div>
 
-<div class="col-sm-9">
+<div class="col-sm-8">
   {% if form %}
     <form action="" method="post">
       {% include "revision/include/form.html" %}

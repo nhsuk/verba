@@ -156,7 +156,7 @@ class RevisionFile(object):
 
         # save main manifest
         self._file.change_content(
-            json.dumps(content, indent=4),
+            json.dumps(content, indent=4, sort_keys=True),
             message=FILE_CHANGED_COMMIT_MSG.format(path=self.path)
         )
 

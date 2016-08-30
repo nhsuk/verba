@@ -5,9 +5,7 @@
 <script type="text/javascript">
   $(function() {
     $('#diff').html(
-        Diff2Html.getPrettySideBySideHtmlFromDiff("{{ revision.diff|escapejs }}", {
-          showFiles: true
-        })
+        Diff2Html.getPrettySideBySideHtmlFromDiff("{{ revision.diff|escapejs }}")
     );
   });
 </script>

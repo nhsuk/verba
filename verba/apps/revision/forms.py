@@ -32,6 +32,16 @@ class ContentForm(forms.Form):
                 'field': forms.CharField,
                 'kwargs': {}
             }
+        },
+        'sub-title': {
+            'ordering': '2',
+            'type': {
+                'field': forms.CharField,
+                'kwargs': {
+                    'required': False,
+                    'widget': forms.Textarea(attrs={'rows': 3})
+                }
+            }
         }
     }
 
@@ -44,7 +54,7 @@ class ContentForm(forms.Form):
                 'type': {
                     'field': forms.CharField,
                     'kwargs': {
-                        'widget': forms.Textarea(attrs={'rows': 10, 'cols': 110})
+                        'widget': forms.Textarea(attrs={'rows': 10})
                     }
                 }
             }
