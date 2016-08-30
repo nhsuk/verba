@@ -324,6 +324,10 @@ class Revision(object):
         ]
         return activities
 
+    @property
+    def diff(self):
+        return self._pull.diff
+
     def get_absolute_url(self):
         return reverse('revision:activities', args=[self.id])
 

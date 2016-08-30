@@ -249,3 +249,27 @@ class ActivitiesTestCase(BaseRevisionDetailTestCase):
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
         revision.add_comment.assert_called_with('test comment')
+
+
+@mock.patch('revision.views.RevisionManager')
+class ChangesTestCase(BaseRevisionDetailTestCase):
+    def setUp(self):
+        super(ChangesTestCase, self).setUp()
+        self.url = reverse('revision:changes', kwargs={'revision_id': 1})
+
+    def test_redirects_to_login(self, MockedRevisionManager):  # noqa
+        self._test_redirects_to_login(self.url)
+
+    def test_non_assignees_not_allowed(self, MockedRevisionManager):  # noqa
+        self._test_non_assignees_not_allowed(MockedRevisionManager)
+
+    def test_get(self, MockedRevisionManager):  # noqa
+        revision = self.get_mocked_revision()
+        revision.diff = 'some diff'
+        MockedRevisionManager().get.return_value = revision
+
+        self.login()
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['revision'].diff, revision.diff)

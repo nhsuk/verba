@@ -176,3 +176,13 @@ class Activities(BaseRevisionDetailMixin, SuccessMessageMixin, FormMixin, Proces
 
     def get_success_url(self):
         return reverse('revision:activities', kwargs={'revision_id': self.get_revision().id})
+
+
+class Changes(BaseRevisionDetailMixin, View):
+    http_method_names = ['get']
+    template_name = 'revision/changes.html'
+    page_type = 'changes'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)

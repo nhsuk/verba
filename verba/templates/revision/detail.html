@@ -32,7 +32,7 @@
     <a class="nav-link{% if page_type == 'editor' %} active{% endif %}" href="{% url 'revision:editor' revision_id %}">Editor</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link{% if page_type == 'changes' %} active{% endif %}" href="#">Changes</a>
+    <a class="nav-link{% if page_type == 'changes' %} active{% endif %}" href="{% url 'revision:changes' revision_id %}">Changes</a>
   </li>
 </ul>
 {% endblock %}
