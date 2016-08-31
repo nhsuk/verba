@@ -156,7 +156,7 @@ class RevisionFile(object):
 
         # save main manifest
         self._file.change_content(
-            json.dumps(content, indent=4),
+            json.dumps(content, indent=4, sort_keys=True),
             message=FILE_CHANGED_COMMIT_MSG.format(path=self.path)
         )
 
@@ -323,6 +323,10 @@ class Revision(object):
             Comment(comment) for comment in self._pull.comments
         ]
         return activities
+
+    @property
+    def diff(self):
+        return self._pull.diff
 
     def get_absolute_url(self):
         return reverse('revision:activities', args=[self.id])

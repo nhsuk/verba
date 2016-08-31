@@ -44,4 +44,9 @@ urlpatterns = [
         login_required(views.Activities.as_view()),
         name='activities'
     ),
+    url(
+        r'^(?P<revision_id>\d+)/changes/$',
+        login_required(views.Changes.as_view()),
+        name='changes'
+    ),
 ]

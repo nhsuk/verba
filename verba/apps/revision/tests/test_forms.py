@@ -64,7 +64,7 @@ class ContentFormTestCase(SimpleTestCase):
 
         self.assertEqual(
             list(form.fields.keys()),
-            ['title', 'right-content', 'sub-title']
+            ['title', 'sub-title', 'right-content']
         )
 
         self.assertEqual(form.fields['title'].initial, self.content_items['title'])

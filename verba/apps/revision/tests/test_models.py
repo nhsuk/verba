@@ -277,6 +277,12 @@ class RevisionTestCase(SimpleTestCase):
         self.revision.add_comment('test comment')
         self.assertEqual(self.revision._pull.add_comment.call_count, 1)
 
+    def test_diff(self):
+        self.revision._pull.diff = 'some diff'
+        self.assertEqual(
+            self.revision.diff, 'some diff'
+        )
+
     def test_activities(self):
         self.revision._pull.created_at = datetime.datetime.now()
         self.revision._pull.comments = [

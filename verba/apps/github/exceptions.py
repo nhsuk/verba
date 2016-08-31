@@ -1,3 +1,6 @@
+import json
+
+
 class GitHubException(Exception):
     pass
 
@@ -10,7 +13,10 @@ class InvalidResponseException(GitHubException):
     @classmethod
     def from_response(cls, response):
         message = 'Received {} from {}'.format(response.status_code, response.request.url)
-        reason = '' if not response.content else response.json()
+        try:
+            reason = response.json()
+        except json.decoder.JSONDecodeError:
+            reason = ''
         return cls(message, reason)
 
 

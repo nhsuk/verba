@@ -17,6 +17,7 @@ class BasePullTestCase(BaseGithubTestCase):
             'number': 1,
             'url': self.get_github_api_repo_url('pulls/1'),
             'issue_url': self.get_github_api_repo_url('issues/1'),
+            'diff_url': self.get_github_http_repo_url('pull/1.diff'),
             'title': 'pull title',
             'body': 'pull body',
             'head': {
@@ -233,3 +234,16 @@ class ClosePullTestCase(BasePullTestCase):
         )
 
         self.pull.close()
+
+
+class DiffPullTestCase(BasePullTestCase):
+    @responses.activate
+    def test_success(self):
+        diff = 'this is some diff in plain text'
+        responses.add(
+            responses.GET, self.data['diff_url'],
+            body=diff, status=200,
+            content_type='text/plain'
+        )
+
+        self.assertEqual(self.pull.diff, diff)

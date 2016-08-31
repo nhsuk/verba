@@ -1,0 +1,20 @@
+{% extends "revision/detail.html" %}{% load static from staticfiles %}
+
+{% block javascript %}{{ block.super }}
+<script src="{% static 'js/diff2html.min.js' %}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('#diff').html(
+        Diff2Html.getPrettySideBySideHtmlFromDiff("{{ revision.diff|escapejs }}")
+    );
+  });
+</script>
+{% endblock %}
+
+{% block css %}{{ block.super }}
+<link href="{% static 'css/diff2html.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block detail-content %}
+<div id="diff"></div>
+{% endblock %}

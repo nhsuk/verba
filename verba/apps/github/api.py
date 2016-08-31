@@ -14,36 +14,59 @@ logger = logging.getLogger('github.api')
 
 
 class Request(object):
+    base_url = None
+    default_json = True
+
     def __init__(self, token):
         self.token = token
         self.url = None
+        self.in_json = self.default_json
 
     def _build_url(self, url_part):
-        return '{}/{}'.format(config.GITHUB_API_HOST, url_part)
+        return '{}/{}'.format(self.base_url, url_part)
 
     def set_url(self, url_or_part):
-        if not url_or_part.startswith(config.GITHUB_API_HOST):
+        if not url_or_part.startswith(self.base_url):
             self.url = self._build_url(url_or_part)
         else:
             self.url = url_or_part
         return self
 
+    def set_in_json(self, in_json):
+        self.in_json = in_json
+        return self
+
+    def _build_data(self, data):
+        if self.in_json:
+            return json.dumps(data)
+        return data
+
+    def _build_accept(self):
+        if self.in_json:
+            return 'application/json'
+        return 'text/plain'
+
+    def _build_response(self, response):
+        if self.in_json:
+            return response.json()
+        return response.content
+
     def get(self, params={}):
         return self._make('get', params=params)
 
     def put(self, data={}):
-        return self._make('put', data=json.dumps(data))
+        return self._make('put', data=self._build_data(data))
 
     def patch(self, data={}):
-        return self._make('patch', data=json.dumps(data))
+        return self._make('patch', data=self._build_data(data))
 
     def post(self, data={}):
-        return self._make('post', data=json.dumps(data))
+        return self._make('post', data=self._build_data(data))
 
     def _make(self, verb, **kwargs):
         kwargs['headers'] = {
             'Authorization': 'token {}'.format(self.token),
-            'Accept': 'application/json'
+            'Accept': self._build_accept()
         }
 
         verb_func = getattr(requests, verb)
@@ -55,10 +78,19 @@ class Request(object):
                 raise NotFoundException.from_response(response)
             raise InvalidResponseException.from_response(response)
 
-        return response.json()
+        return self._build_response(response)
 
 
-class RepoRequest(Request):
+class HTTPRequest(Request):
+    base_url = config.GITHUB_HTTP_HOST
+    default_json = False
+
+
+class APIRequest(Request):
+    base_url = config.GITHUB_API_HOST
+
+
+class RepoRequest(APIRequest):
     """
     Like Request but used for actions on a repo.
     """
@@ -280,6 +312,11 @@ class PullRequest(object):
     def tot_comments(self):
         return self._data['comments']
 
+    @property
+    def diff(self):
+        content = HTTPRequest(self.token).set_url(self._data['diff_url']).get()
+        return content.decode("utf-8")
+
     @classmethod
     def create(cls, token, title, body, base, head):
         data = {
@@ -388,5 +425,5 @@ class User(object):
 
     @classmethod
     def get_logged_in(cls, token):
-        user_data = Request(token).set_url('user').get()
+        user_data = APIRequest(token).set_url('user').get()
         return cls(token, user_data)
