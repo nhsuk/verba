@@ -12,6 +12,7 @@ class BaseIssueTestCase(BaseGithubTestCase):
         super(BaseIssueTestCase, self).setUp()
 
         self.data = {
+            'id': 1,
             'url': self.get_github_api_repo_url('issues/1'),
             'labels': [
                 {'name': 'label1'},

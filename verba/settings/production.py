@@ -26,11 +26,16 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-VERBA_GITHUB_TOKEN = os.environ["VERBA_GITHUB_TOKEN"]
 VERBA_CONFIG['REPO'] = os.environ["VERBA_REPO"]
-VERBA_CONFIG['REVIEW_GITHUB_USERS'] = os.environ["VERBA_REVIEW_GITHUB_USERS"]
-VERBA_CONFIG['PREVIEW']['URL_GENERATOR'] = \
-    lambda rev: os.environ["VERBA_REVIEW_URL_GENERATOR"].format(rev._pull.issue_nr)
+VERBA_CONFIG['GITHUB_AUTH'] = {
+    'CLIENT_ID': os.environ["VERBA_CLIENT_ID"],
+    'CLIENT_SECRET': os.environ["VERBA_CLIENT_SECRET"],
+}
+VERBA_CONFIG['ASSIGNEES'] = {
+    'ALLOWED': os.environ["VERBA_ASSIGNEES_ALLOWED"].split(','),
+    'WRITERS': os.environ["VERBA_ASSIGNEES_WRITERS"].split(','),
+    'DEVELOPERS': os.environ["VERBA_ASSIGNEES_DEVELOPERS"].split(','),
+}
 
 
 SECURE_SSL_REDIRECT = True

@@ -98,6 +98,13 @@ TEMPLATES = [
     }
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': 'localhost:6379',
+    },
+}
+
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [

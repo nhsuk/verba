@@ -3,6 +3,7 @@ import requests
 import base64
 import logging
 
+from django.core.cache import cache
 from django.utils.dateparse import parse_datetime
 
 from verba_settings import config
@@ -11,6 +12,8 @@ from .exceptions import InvalidResponseException, NotFoundException
 
 
 logger = logging.getLogger('github.api')
+
+CACHE_TIMEOUT = 120
 
 
 class Request(object):
@@ -204,7 +207,12 @@ class Branch(object):
         url = 'git/trees/{}?recursive={}'.format(
             sha, '1' if recursive else '0'
         )
-        return RepoRequest(self.token).set_url(url).get()
+        data = cache.get_or_set(
+            url,
+            lambda: RepoRequest(self.token).set_url(url).get(),
+            timeout=CACHE_TIMEOUT
+        )
+        return data
 
     def get_dir_files(self, path):
         tree_data = self.get_git_tree(path, recursive=True)
@@ -250,7 +258,11 @@ class PullRequest(object):
     @property
     def issue(self):
         if not hasattr(self, '_issue'):
-            issue_data = RepoRequest(self.token).set_url(self._data['issue_url']).get()
+            issue_data = cache.get_or_set(
+                Issue.get_cache_key(self.issue_nr),
+                lambda: RepoRequest(self.token).set_url(self._data['issue_url']).get(),
+                timeout=CACHE_TIMEOUT
+            )
             self._issue = Issue(self.token, issue_data)
         return self._issue
 
@@ -274,12 +286,14 @@ class PullRequest(object):
         RepoRequest(self.token).set_url(self._data['url']).patch(data)
         self._data['title'] = title
         self._data['body'] = description
+        self.invalidate_cache()
 
     def close(self):
         data = {
             'state': 'closed'
         }
         RepoRequest(self.token).set_url(self._data['url']).patch(data)
+        self.invalidate_cache()
 
     @property
     def head_ref(self):
@@ -292,6 +306,7 @@ class PullRequest(object):
     @labels.setter
     def labels(self, labels):
         self.issue.labels = labels
+        self.invalidate_cache()
 
     @property
     def assignees(self):
@@ -300,9 +315,11 @@ class PullRequest(object):
     @assignees.setter
     def assignees(self, assignees):
         self.issue.assignees = assignees
+        self.invalidate_cache()
 
     def add_comment(self, comment):
         self.issue.add_comment(comment)
+        self.invalidate_cache()
 
     @property
     def comments(self):
@@ -316,6 +333,13 @@ class PullRequest(object):
     def diff(self):
         content = HTTPRequest(self.token).set_url(self._data['diff_url']).get()
         return content.decode("utf-8")
+
+    @classmethod
+    def get_cache_key(cls, pk):
+        return 'pulls/{}'.format(pk)
+
+    def invalidate_cache(self):
+        cache.delete(self.get_cache_key(self.issue_nr))
 
     @classmethod
     def create(cls, token, title, body, base, head):
@@ -337,7 +361,11 @@ class PullRequest(object):
 
     @classmethod
     def get(cls, token, number):
-        pull_data = RepoRequest(token).set_url('pulls/{}'.format(number)).get()
+        pull_data = cache.get_or_set(
+            cls.get_cache_key(number),
+            lambda: RepoRequest(token).set_url('pulls/{}'.format(number)).get(),
+            timeout=CACHE_TIMEOUT
+        )
         return cls(token, pull_data)
 
 
@@ -357,6 +385,7 @@ class Issue(object):
         }
         pull_data = RepoRequest(self.token).set_url(self._data['url']).patch(data)
         self._data = pull_data
+        self.invalidate_cache()
 
     @property
     def assignees(self):
@@ -369,20 +398,36 @@ class Issue(object):
         }
         pull_data = RepoRequest(self.token).set_url(self._data['url']).patch(data)
         self._data = pull_data
+        self.invalidate_cache()
 
     def add_comment(self, comment):
         data = {
             'body': comment
         }
-        RepoRequest(self.token).set_url(self._data['comments_url']).post(data)
+        url = self._data['comments_url']
+        RepoRequest(self.token).set_url(url).post(data)
+        cache.delete(url)
+        self.invalidate_cache()
 
     @property
     def comments(self):
-        comments_data = RepoRequest(self.token).set_url(self._data['comments_url']).get()
+        url = self._data['comments_url']
+        comments_data = cache.get_or_set(
+            url,
+            lambda: RepoRequest(self.token).set_url(url).get(),
+            timeout=CACHE_TIMEOUT
+        )
         return [
             Comment(self.token, data)
             for data in comments_data
         ]
+
+    @classmethod
+    def get_cache_key(cls, pk):
+        return 'issues/{}'.format(pk)
+
+    def invalidate_cache(self):
+        cache.delete(self.get_cache_key(self._data['id']))
 
 
 class Repo(object):
